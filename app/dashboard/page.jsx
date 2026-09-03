@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase-server'
+import { formatDateLocal } from '@/lib/date'
 import DashboardClient from '@/components/DashboardClient'
 import MonthNav from '@/components/MonthNav'
 import Navbar from '@/components/Navbar'
@@ -19,8 +20,8 @@ export default async function DashboardPage({ searchParams }) {
     ? monthParam.split('-').map(Number)
     : [now.getFullYear(), now.getMonth() + 1]
 
-  const firstDay = new Date(year, month - 1, 1).toISOString().split('T')[0]
-  const lastDay = new Date(year, month, 0).toISOString().split('T')[0]
+  const firstDay = formatDateLocal(new Date(year, month - 1, 1))
+  const lastDay = formatDateLocal(new Date(year, month, 0))
 
   const { data: transactions } = await supabase
     .from('transactions')
@@ -32,7 +33,7 @@ export default async function DashboardPage({ searchParams }) {
     .order('created_at', { ascending: false })
 
   return (
-    <div className="min-h-screen bg-surface">
+    <div className="min-h-screen bg-charcoal">
       <Navbar active="dashboard" email={user.email} />
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8">

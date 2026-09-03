@@ -7,19 +7,27 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Palet kalem hijau tosca + biru — nyaman dilihat untuk dipakai harian
-        primary: {
-          50: '#eefaf6',
-          100: '#d5f0e6',
-          400: '#4fb894',
-          500: '#2f9d78',
-          600: '#237e5f',
+        // "Brankas" (vault) palette — dark charcoal/bottle-green ground, single brass accent
+        charcoal: '#14171A',
+        charcoal2: '#1c2320',
+        panel: '#16241d',
+        brass: {
+          DEFAULT: '#c9a227',
+          dim: '#8c7530',
+          soft: '#e4c563',
         },
-        accent: {
-          400: '#5b9bd5',
-          500: '#3b7fc4',
+        parchment: {
+          DEFAULT: '#ede8de',
+          dim: '#9c978a',
         },
-        surface: '#f7f9f8',
+        loss: {
+          DEFAULT: '#c1543f',
+          dim: '#8c4738',
+        },
+      },
+      fontFamily: {
+        serif: ['var(--font-newsreader)', 'Georgia', 'serif'],
+        sans: ['var(--font-space-grotesk)', 'ui-sans-serif', 'sans-serif'],
       },
     },
   },

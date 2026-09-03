@@ -23,19 +23,19 @@ export default function MonthNav({ year, month }) {
   const isCurrentMonth = year === now.getFullYear() && month === now.getMonth() + 1
 
   return (
-    <div className="flex items-center justify-between bg-white rounded-2xl shadow-sm px-3 sm:px-5 py-3 gap-2">
+    <div className="flex items-center justify-between bg-panel border border-brass/15 rounded-lg px-3 sm:px-5 py-3 gap-2">
       <Link
         href={`/dashboard?month=${prevParam}`}
-        className="text-xs sm:text-sm text-slate-500 hover:text-primary-600 px-1.5 sm:px-2 py-1 whitespace-nowrap"
+        className="text-xs sm:text-sm text-parchment-dim hover:text-brass-soft px-1.5 sm:px-2 py-1 whitespace-nowrap"
       >
         <span className="sm:hidden">‹ Lalu</span>
         <span className="hidden sm:inline">← Bulan Lalu</span>
       </Link>
 
-      <span className="text-sm font-semibold text-slate-700 text-center">
+      <span className="text-sm font-serif italic text-parchment text-center">
         {MONTH_NAMES[month - 1]} {year}
         {isCurrentMonth && (
-          <span className="block sm:inline sm:ml-2 text-xs font-normal text-primary-500 bg-primary-50 px-2 py-0.5 rounded-full mt-1 sm:mt-0">
+          <span className="block sm:inline sm:ml-2 text-xs font-sans not-italic text-brass-soft border border-brass/30 px-2 py-0.5 rounded-full mt-1 sm:mt-0">
             Bulan Ini
           </span>
         )}
@@ -43,7 +43,7 @@ export default function MonthNav({ year, month }) {
 
       <Link
         href={`/dashboard?month=${nextParam}`}
-        className="text-xs sm:text-sm text-slate-500 hover:text-primary-600 px-1.5 sm:px-2 py-1 whitespace-nowrap"
+        className="text-xs sm:text-sm text-parchment-dim hover:text-brass-soft px-1.5 sm:px-2 py-1 whitespace-nowrap"
       >
         <span className="sm:hidden">Depan ›</span>
         <span className="hidden sm:inline">Bulan Depan →</span>

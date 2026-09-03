@@ -8,6 +8,8 @@ const ALL_CATEGORIES = [...INCOME_CATEGORIES, ...EXPENSE_CATEGORIES].filter(
   (cat, index, arr) => arr.indexOf(cat) === index // hilangkan duplikat (misal "Lainnya")
 )
 
+const PAGE_SIZE = 25
+
 function formatRupiah(num) {
   return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(num)
 }
@@ -16,7 +18,10 @@ export default function TransactionsList({ initialTransactions }) {
   const [transactions, setTransactions] = useState(initialTransactions)
   const [loading, setLoading] = useState(false)
   const [editingId, setEditingId] = useState(null)
-  const [deletingId, setDeletingId] = useState(null)
+  const [pendingDelete, setPendingDelete] = useState(null)
+  const [deleting, setDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState('')
+  const [page, setPage] = useState(1)
 
   // Filter state
   const [from, setFrom] = useState('')
@@ -36,25 +41,48 @@ export default function TransactionsList({ initialTransactions }) {
 
     if (res.ok) {
       setTransactions(result.data)
+      setPage(1) // filter berubah -> mulai lagi dari halaman pertama
     }
   }, [from, to, category])
+
+  // Kalau daftar mengecil (misal setelah hapus) dan halaman saat ini jadi
+  // kosong, mundur ke halaman terakhir yang masih punya data
+  const totalPages = Math.max(1, Math.ceil(transactions.length / PAGE_SIZE))
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages)
+  }, [page, totalPages])
+
+  const pageStart = (page - 1) * PAGE_SIZE
+  const visibleTransactions = transactions.slice(pageStart, pageStart + PAGE_SIZE)
 
   // Refetch setiap kali filter berubah
   useEffect(() => {
     fetchTransactions()
   }, [fetchTransactions])
 
-  async function handleDelete(id) {
-    if (!confirm('Yakin ingin menghapus transaksi ini?')) return
+  // Batalkan konfirmasi hapus dengan tombol Escape
+  useEffect(() => {
+    if (!pendingDelete) return
+    function onKeyDown(e) {
+      if (e.key === 'Escape') setPendingDelete(null)
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [pendingDelete])
 
-    setDeletingId(id)
-    const res = await fetch(`/api/transactions/${id}`, { method: 'DELETE' })
-    setDeletingId(null)
+  async function confirmDelete() {
+    if (!pendingDelete) return
+    setDeleting(true)
+    setDeleteError('')
+
+    const res = await fetch(`/api/transactions/${pendingDelete.id}`, { method: 'DELETE' })
+    setDeleting(false)
 
     if (res.ok) {
-      setTransactions((prev) => prev.filter((t) => t.id !== id))
+      setTransactions((prev) => prev.filter((t) => t.id !== pendingDelete.id))
+      setPendingDelete(null)
     } else {
-      alert('Gagal menghapus transaksi')
+      setDeleteError('Gagal menghapus transaksi. Coba lagi.')
     }
   }
 
@@ -69,32 +97,32 @@ export default function TransactionsList({ initialTransactions }) {
   return (
     <div className="space-y-6">
       {/* Filter */}
-      <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-5">
+      <div className="bg-panel border border-brass/15 rounded-lg p-4 sm:p-5">
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
           <div>
-            <label className="block text-xs font-medium text-slate-500 mb-1">Dari Tanggal</label>
+            <label className="block text-xs text-parchment-dim mb-1">Dari Tanggal</label>
             <input
               type="date"
               value={from}
               onChange={(e) => setFrom(e.target.value)}
-              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400"
+              className="w-full rounded-md bg-charcoal2 border border-brass/20 px-3 py-2 text-sm text-parchment focus:outline-none focus:ring-1 focus:ring-brass"
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-slate-500 mb-1">Sampai Tanggal</label>
+            <label className="block text-xs text-parchment-dim mb-1">Sampai Tanggal</label>
             <input
               type="date"
               value={to}
               onChange={(e) => setTo(e.target.value)}
-              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400"
+              className="w-full rounded-md bg-charcoal2 border border-brass/20 px-3 py-2 text-sm text-parchment focus:outline-none focus:ring-1 focus:ring-brass"
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-slate-500 mb-1">Kategori</label>
+            <label className="block text-xs text-parchment-dim mb-1">Kategori</label>
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400"
+              className="w-full rounded-md bg-charcoal2 border border-brass/20 px-3 py-2 text-sm text-parchment focus:outline-none focus:ring-1 focus:ring-brass"
             >
               <option value="">Semua Kategori</option>
               {ALL_CATEGORIES.map((cat) => (
@@ -105,7 +133,7 @@ export default function TransactionsList({ initialTransactions }) {
           <div className="flex items-end">
             <button
               onClick={resetFilters}
-              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-500 hover:bg-slate-50 transition-colors"
+              className="w-full rounded-md border border-brass/20 px-3 py-2 text-sm text-parchment-dim hover:text-parchment hover:border-brass/40 transition-colors"
             >
               Reset Filter
             </button>
@@ -126,45 +154,130 @@ export default function TransactionsList({ initialTransactions }) {
       )}
 
       {/* Daftar transaksi */}
-      <div className="bg-white rounded-2xl shadow-sm p-6">
+      <div className="bg-panel border border-brass/15 rounded-lg p-6">
         {loading ? (
-          <p className="text-sm text-slate-400 text-center py-8">Memuat...</p>
+          <p className="text-sm text-parchment-dim text-center py-8">Memuat...</p>
         ) : transactions.length === 0 ? (
-          <p className="text-sm text-slate-400 text-center py-8">Tidak ada transaksi yang cocok dengan filter.</p>
+          <p className="text-sm text-parchment-dim text-center py-8">Tidak ada transaksi yang cocok dengan filter.</p>
         ) : (
-          <ul className="divide-y divide-slate-100">
-            {transactions.map((t) => (
-              <li key={t.id} className="flex flex-col sm:flex-row sm:justify-between sm:items-center py-3 gap-2">
+          <ul>
+            {visibleTransactions.map((t, i) => (
+              <li
+                key={t.id}
+                className={`flex flex-col sm:flex-row sm:justify-between sm:items-center py-3 gap-2 ${
+                  i < visibleTransactions.length - 1 ? 'border-b border-brass/10' : ''
+                }`}
+              >
                 <div className="min-w-0">
-                  <p className="text-sm font-medium text-slate-700">{t.category}</p>
-                  <p className="text-xs text-slate-400 truncate">
+                  <p className="text-sm text-parchment">{t.category}</p>
+                  <p className="text-xs text-parchment-dim truncate">
                     {new Date(t.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
                     {t.note ? ` · ${t.note}` : ''}
                   </p>
                 </div>
                 <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0">
-                  <span className={`text-sm font-semibold ${t.type === 'income' ? 'text-primary-600' : 'text-red-500'}`}>
+                  <span className={`text-sm ${t.type === 'income' ? 'text-brass-soft' : 'text-loss'}`}>
                     {t.type === 'income' ? '+' : '-'}{formatRupiah(t.amount)}
                   </span>
                   <button
                     onClick={() => setEditingId(t.id)}
-                    className="text-xs text-accent-500 hover:underline"
+                    className="text-xs text-brass-soft hover:underline"
                   >
                     Edit
                   </button>
                   <button
-                    onClick={() => handleDelete(t.id)}
-                    disabled={deletingId === t.id}
-                    className="text-xs text-red-400 hover:underline disabled:opacity-50"
+                    onClick={() => {
+                      setDeleteError('')
+                      setPendingDelete(t)
+                    }}
+                    className="text-xs text-loss hover:underline"
                   >
-                    {deletingId === t.id ? 'Menghapus...' : 'Hapus'}
+                    Hapus
                   </button>
                 </div>
               </li>
             ))}
           </ul>
         )}
+
+        {!loading && transactions.length > 0 && totalPages > 1 && (
+          <div className="flex items-center justify-between mt-4 pt-4 border-t border-brass/10">
+            <span className="text-xs text-parchment-dim">
+              {pageStart + 1}–{Math.min(pageStart + PAGE_SIZE, transactions.length)} dari {transactions.length} transaksi
+            </span>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className="text-xs text-parchment-dim hover:text-brass-soft disabled:opacity-30 disabled:hover:text-parchment-dim transition-colors"
+              >
+                Sebelumnya
+              </button>
+              <span className="text-xs text-parchment-dim">
+                {page} / {totalPages}
+              </span>
+              <button
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages}
+                className="text-xs text-parchment-dim hover:text-brass-soft disabled:opacity-30 disabled:hover:text-parchment-dim transition-colors"
+              >
+                Berikutnya
+              </button>
+            </div>
+          </div>
+        )}
       </div>
+
+      {/* Konfirmasi hapus */}
+      {pendingDelete && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-charcoal/70 backdrop-blur-sm px-4"
+          onClick={() => !deleting && setPendingDelete(null)}
+        >
+          <div
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="delete-dialog-title"
+            className="w-full max-w-sm bg-panel border border-brass/20 rounded-lg p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 id="delete-dialog-title" className="text-sm text-parchment mb-1">
+              Hapus transaksi ini?
+            </h3>
+            <p className="text-sm text-parchment-dim mb-6">
+              {pendingDelete.category} ·{' '}
+              <span className={pendingDelete.type === 'income' ? 'text-brass-soft' : 'text-loss'}>
+                {pendingDelete.type === 'income' ? '+' : '-'}{formatRupiah(pendingDelete.amount)}
+              </span>{' '}
+              pada {new Date(pendingDelete.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}.
+              Tindakan ini tidak bisa dibatalkan.
+            </p>
+
+            {deleteError && (
+              <p className="text-sm text-loss bg-loss/10 border border-loss/20 rounded-md px-3 py-2 mb-4">
+                {deleteError}
+              </p>
+            )}
+
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setPendingDelete(null)}
+                disabled={deleting}
+                className="text-sm text-parchment-dim hover:text-parchment px-4 py-2 rounded-md border border-brass/20 transition-colors disabled:opacity-50"
+              >
+                Batal
+              </button>
+              <button
+                onClick={confirmDelete}
+                disabled={deleting}
+                className="text-sm text-parchment bg-loss hover:bg-loss-dim px-4 py-2 rounded-md font-medium transition-colors disabled:opacity-60"
+              >
+                {deleting ? 'Menghapus...' : 'Hapus'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

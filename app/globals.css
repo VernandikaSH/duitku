@@ -2,6 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  background-color: #f7f9f8;
+::selection {
+  background-color: #c9a227;
+  color: #14171a;
+}
+
+* {
+  font-variant-numeric: tabular-nums;
+}
+
+:focus-visible {
+  outline: 2px solid #c9a227;
+  outline-offset: 2px;
 }

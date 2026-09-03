@@ -3,10 +3,11 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { getCategoriesByType } from '@/lib/categories'
+import { formatDateLocal } from '@/lib/date'
 
 export default function TransactionForm({ onSuccess, onCancel, editData }) {
   const router = useRouter()
-  const today = new Date().toISOString().split('T')[0]
+  const today = formatDateLocal(new Date())
   const isEditMode = Boolean(editData)
 
   const [type, setType] = useState(editData?.type || 'expense')
@@ -57,13 +58,13 @@ export default function TransactionForm({ onSuccess, onCancel, editData }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-sm p-6 space-y-4">
+    <form onSubmit={handleSubmit} className="bg-panel border border-brass/15 rounded-lg p-6 space-y-4">
       <div className="flex justify-between items-center">
-        <h3 className="font-semibold text-slate-800">
-          {isEditMode ? 'Edit Transaksi' : 'Tambah Transaksi'}
+        <h3 className="text-sm text-parchment-dim">
+          {isEditMode ? 'Edit transaksi' : 'Tambah transaksi'}
         </h3>
         {isEditMode && onCancel && (
-          <button type="button" onClick={onCancel} className="text-sm text-slate-400 hover:text-slate-600">
+          <button type="button" onClick={onCancel} className="text-sm text-parchment-dim hover:text-parchment">
             Batal
           </button>
         )}
@@ -74,10 +75,10 @@ export default function TransactionForm({ onSuccess, onCancel, editData }) {
         <button
           type="button"
           onClick={() => handleTypeChange('expense')}
-          className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
+          className={`flex-1 py-2 rounded-md text-sm transition-colors border ${
             type === 'expense'
-              ? 'bg-red-50 text-red-600 border border-red-200'
-              : 'bg-slate-50 text-slate-500 border border-transparent'
+              ? 'bg-loss/10 text-loss border-loss/30'
+              : 'bg-charcoal2 text-parchment-dim border-transparent'
           }`}
         >
           Pengeluaran
@@ -85,10 +86,10 @@ export default function TransactionForm({ onSuccess, onCancel, editData }) {
         <button
           type="button"
           onClick={() => handleTypeChange('income')}
-          className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
+          className={`flex-1 py-2 rounded-md text-sm transition-colors border ${
             type === 'income'
-              ? 'bg-primary-50 text-primary-600 border border-primary-100'
-              : 'bg-slate-50 text-slate-500 border border-transparent'
+              ? 'bg-brass/10 text-brass-soft border-brass/30'
+              : 'bg-charcoal2 text-parchment-dim border-transparent'
           }`}
         >
           Pemasukan
@@ -96,7 +97,7 @@ export default function TransactionForm({ onSuccess, onCancel, editData }) {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">Jumlah (Rp)</label>
+        <label className="block text-sm text-parchment-dim mb-1">Jumlah (Rp)</label>
         <input
           type="number"
           required
@@ -105,17 +106,17 @@ export default function TransactionForm({ onSuccess, onCancel, editData }) {
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
           placeholder="50000"
-          className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400"
+          className="w-full rounded-md bg-charcoal2 border border-brass/20 px-3 py-2 text-sm text-parchment placeholder:text-parchment-dim/50 focus:outline-none focus:ring-1 focus:ring-brass"
         />
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Kategori</label>
+          <label className="block text-sm text-parchment-dim mb-1">Kategori</label>
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400"
+            className="w-full rounded-md bg-charcoal2 border border-brass/20 px-3 py-2 text-sm text-parchment focus:outline-none focus:ring-1 focus:ring-brass"
           >
             {getCategoriesByType(type).map((cat) => (
               <option key={cat} value={cat}>{cat}</option>
@@ -124,38 +125,38 @@ export default function TransactionForm({ onSuccess, onCancel, editData }) {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Tanggal</label>
+          <label className="block text-sm text-parchment-dim mb-1">Tanggal</label>
           <input
             type="date"
             required
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400"
+            className="w-full rounded-md bg-charcoal2 border border-brass/20 px-3 py-2 text-sm text-parchment focus:outline-none focus:ring-1 focus:ring-brass"
           />
         </div>
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">
-          Catatan <span className="text-slate-400 font-normal">(opsional)</span>
+        <label className="block text-sm text-parchment-dim mb-1">
+          Catatan <span className="text-parchment-dim/60">(opsional)</span>
         </label>
         <input
           type="text"
           value={note}
           onChange={(e) => setNote(e.target.value)}
           placeholder="Misal: makan siang bareng tim"
-          className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400"
+          className="w-full rounded-md bg-charcoal2 border border-brass/20 px-3 py-2 text-sm text-parchment placeholder:text-parchment-dim/50 focus:outline-none focus:ring-1 focus:ring-brass"
         />
       </div>
 
       {error && (
-        <p className="text-sm text-red-500 bg-red-50 rounded-lg px-3 py-2">{error}</p>
+        <p className="text-sm text-loss bg-loss/10 border border-loss/20 rounded-md px-3 py-2">{error}</p>
       )}
 
       <button
         type="submit"
         disabled={loading}
-        className="w-full bg-primary-500 hover:bg-primary-600 text-white font-medium rounded-lg py-2.5 text-sm transition-colors disabled:opacity-60"
+        className="w-full bg-brass hover:bg-brass-soft text-charcoal font-medium rounded-md py-2.5 text-sm transition-colors disabled:opacity-60"
       >
         {loading ? 'Menyimpan...' : isEditMode ? 'Update Transaksi' : 'Simpan Transaksi'}
       </button>
