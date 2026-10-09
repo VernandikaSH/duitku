@@ -15,3 +15,54 @@
   outline: 2px solid #c9a227;
   outline-offset: 2px;
 }
+
+/* ---------- Motion ---------- */
+:root {
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+/* Konten halaman muncul halus saat pindah route (navbar tidak ikut) */
+.page-enter {
+  animation: page-in 220ms var(--ease-out) both;
+}
+
+@keyframes page-in {
+  from { opacity: 0; transform: translateY(6px); }
+}
+
+/* Ganti bulan: konten masuk dari arah tombol yang diklik */
+.month-enter-next {
+  animation: month-in-next 220ms var(--ease-out) both;
+}
+.month-enter-prev {
+  animation: month-in-prev 220ms var(--ease-out) both;
+}
+
+@keyframes month-in-next {
+  from { opacity: 0; transform: translateX(12px); }
+}
+@keyframes month-in-prev {
+  from { opacity: 0; transform: translateX(-12px); }
+}
+
+/* Selagi data baru dimuat (ganti bulan, ganti filter), konten lama meredup. Delay kecil supaya
+   respons cepat tidak menimbulkan kedipan. */
+.pending-fade {
+  transition: opacity 150ms ease;
+}
+.pending-fade[data-pending='true'] {
+  opacity: 0.5;
+  transition-delay: 120ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-enter,
+  .month-enter-next,
+  .month-enter-prev {
+    animation-name: fade-in;
+  }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+}

@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase-server'
 import { formatDateLocal } from '@/lib/date'
 import DashboardClient from '@/components/DashboardClient'
-import MonthNav from '@/components/MonthNav'
+import MonthSwitcher from '@/components/MonthSwitcher'
 import Navbar from '@/components/Navbar'
 
 export default async function DashboardPage({ searchParams }) {
@@ -36,11 +36,11 @@ export default async function DashboardPage({ searchParams }) {
     <div className="min-h-screen bg-charcoal">
       <Navbar active="dashboard" email={user.email} />
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8">
-        <MonthNav year={year} month={month} />
+      <div className="page-enter">
+        <MonthSwitcher year={year} month={month}>
+          <DashboardClient transactions={transactions || []} />
+        </MonthSwitcher>
       </div>
-
-      <DashboardClient transactions={transactions || []} />
     </div>
   )
 }

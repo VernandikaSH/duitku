@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import TransactionForm from './TransactionForm'
 import { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from '@/lib/categories'
 
@@ -28,23 +28,6 @@ export default function TransactionsList({ initialTransactions }) {
   const [to, setTo] = useState('')
   const [category, setCategory] = useState('')
 
-  const fetchTransactions = useCallback(async () => {
-    setLoading(true)
-    const params = new URLSearchParams()
-    if (from) params.set('from', from)
-    if (to) params.set('to', to)
-    if (category) params.set('category', category)
-
-    const res = await fetch(`/api/transactions?${params.toString()}`)
-    const result = await res.json()
-    setLoading(false)
-
-    if (res.ok) {
-      setTransactions(result.data)
-      setPage(1) // filter berubah -> mulai lagi dari halaman pertama
-    }
-  }, [from, to, category])
-
   // Kalau daftar mengecil (misal setelah hapus) dan halaman saat ini jadi
   // kosong, mundur ke halaman terakhir yang masih punya data
   const totalPages = Math.max(1, Math.ceil(transactions.length / PAGE_SIZE))
@@ -55,10 +38,37 @@ export default function TransactionsList({ initialTransactions }) {
   const pageStart = (page - 1) * PAGE_SIZE
   const visibleTransactions = transactions.slice(pageStart, pageStart + PAGE_SIZE)
 
-  // Refetch setiap kali filter berubah
+  // Refetch setiap kali filter berubah. Data awal sudah dikirim server, jadi
+  // kombinasi filter kosong saat pertama dibuka tidak perlu diambil ulang.
+  const lastFilterKey = useRef('||')
   useEffect(() => {
-    fetchTransactions()
-  }, [fetchTransactions])
+    const key = `${from}|${to}|${category}`
+    if (key === lastFilterKey.current) return
+    lastFilterKey.current = key
+
+    const controller = new AbortController()
+    const params = new URLSearchParams()
+    if (from) params.set('from', from)
+    if (to) params.set('to', to)
+    if (category) params.set('category', category)
+
+    setLoading(true)
+    fetch(`/api/transactions?${params.toString()}`, { signal: controller.signal })
+      .then(async (res) => {
+        const result = await res.json()
+        if (res.ok) {
+          setTransactions(result.data)
+          setPage(1) // filter berubah -> mulai lagi dari halaman pertama
+        }
+        setLoading(false)
+      })
+      .catch((err) => {
+        // Request lama dibatalkan karena filter berubah lagi -> abaikan
+        if (err.name !== 'AbortError') setLoading(false)
+      })
+
+    return () => controller.abort()
+  }, [from, to, category])
 
   // Batalkan konfirmasi hapus dengan tombol Escape
   useEffect(() => {
@@ -154,10 +164,13 @@ export default function TransactionsList({ initialTransactions }) {
       )}
 
       {/* Daftar transaksi */}
-      <div className="bg-panel border border-brass/15 rounded-lg p-6">
-        {loading ? (
-          <p className="text-sm text-parchment-dim text-center py-8">Memuat...</p>
-        ) : transactions.length === 0 ? (
+      {/* Saat filter dimuat, daftar lama tetap tampil tapi meredup */}
+      <div
+        className="pending-fade bg-panel border border-brass/15 rounded-lg p-6"
+        data-pending={loading}
+        aria-busy={loading}
+      >
+        {transactions.length === 0 ? (
           <p className="text-sm text-parchment-dim text-center py-8">Tidak ada transaksi yang cocok dengan filter.</p>
         ) : (
           <ul>
@@ -200,7 +213,7 @@ export default function TransactionsList({ initialTransactions }) {
           </ul>
         )}
 
-        {!loading && transactions.length > 0 && totalPages > 1 && (
+        {transactions.length > 0 && totalPages > 1 && (
           <div className="flex items-center justify-between mt-4 pt-4 border-t border-brass/10">
             <span className="text-xs text-parchment-dim">
               {pageStart + 1}–{Math.min(pageStart + PAGE_SIZE, transactions.length)} dari {transactions.length} transaksi

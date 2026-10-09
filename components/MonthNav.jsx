@@ -11,7 +11,15 @@ function formatMonthParam(year, month) {
   return `${year}-${String(month).padStart(2, '0')}`
 }
 
-export default function MonthNav({ year, month }) {
+// Klik kiri biasa ditangani lewat transisi; klik tengah / Ctrl+klik tetap
+// berperilaku seperti link normal (buka tab baru, dst.)
+function handleClick(e, onNavigate, delta) {
+  if (!onNavigate || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return
+  e.preventDefault()
+  onNavigate(delta)
+}
+
+export default function MonthNav({ year, month, onNavigate }) {
   // Hitung bulan sebelumnya & berikutnya (menangani pergantian tahun)
   const prevDate = new Date(year, month - 2, 1) // month - 1 (0-index) - 1 (mundur)
   const nextDate = new Date(year, month, 1)     // month (0-index) sudah maju satu
@@ -26,7 +34,8 @@ export default function MonthNav({ year, month }) {
     <div className="flex items-center justify-between bg-panel border border-brass/15 rounded-lg px-3 sm:px-5 py-3 gap-2">
       <Link
         href={`/dashboard?month=${prevParam}`}
-        className="text-xs sm:text-sm text-parchment-dim hover:text-brass-soft px-1.5 sm:px-2 py-1 whitespace-nowrap"
+        onClick={(e) => handleClick(e, onNavigate, -1)}
+        className="text-xs sm:text-sm text-parchment-dim hover:text-brass-soft transition-colors px-1.5 sm:px-2 py-1 whitespace-nowrap"
       >
         <span className="sm:hidden">‹ Lalu</span>
         <span className="hidden sm:inline">← Bulan Lalu</span>
@@ -43,7 +52,8 @@ export default function MonthNav({ year, month }) {
 
       <Link
         href={`/dashboard?month=${nextParam}`}
-        className="text-xs sm:text-sm text-parchment-dim hover:text-brass-soft px-1.5 sm:px-2 py-1 whitespace-nowrap"
+        onClick={(e) => handleClick(e, onNavigate, 1)}
+        className="text-xs sm:text-sm text-parchment-dim hover:text-brass-soft transition-colors px-1.5 sm:px-2 py-1 whitespace-nowrap"
       >
         <span className="sm:hidden">Depan ›</span>
         <span className="hidden sm:inline">Bulan Depan →</span>

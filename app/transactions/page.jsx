@@ -22,7 +22,7 @@ export default async function TransactionsPage() {
     <div className="min-h-screen bg-charcoal">
       <Navbar active="transactions" email={user.email} />
 
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+      <main className="page-enter max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
         <h2 className="text-xl font-serif italic text-parchment mb-6">Riwayat Transaksi</h2>
         <TransactionsList initialTransactions={transactions || []} />
       </main>

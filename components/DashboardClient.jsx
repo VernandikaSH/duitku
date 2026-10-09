@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import TransactionForm from './TransactionForm'
 
 function formatRupiah(num) {
@@ -125,9 +126,9 @@ export default function DashboardClient({ transactions }) {
       <div className="bg-panel border border-brass/15 rounded-lg p-6">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-sm text-parchment-dim">Transaksi terbaru</h3>
-          <a href="/transactions" className="text-sm text-brass-soft hover:underline">
+          <Link href="/transactions" className="text-sm text-brass-soft hover:underline">
             Lihat semua
-          </a>
+          </Link>
         </div>
         {transactions.length === 0 ? (
           <p className="text-sm text-parchment-dim/60 text-center py-8">Belum ada transaksi.</p>
