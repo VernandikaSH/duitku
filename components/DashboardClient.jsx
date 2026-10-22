@@ -110,7 +110,7 @@ export default function DashboardClient({ transactions }) {
       {/* Form tambah transaksi / toggle */}
       <div>
         {showForm ? (
-          <TransactionForm onSuccess={() => setShowForm(false)} />
+          <TransactionForm autoFocusAmount onSuccess={() => setShowForm(false)} />
         ) : (
           <button
             onClick={() => setShowForm(true)}

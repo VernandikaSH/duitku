@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import TransactionForm from './TransactionForm'
 import { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from '@/lib/categories'
 
@@ -80,6 +81,16 @@ export default function TransactionsList({ initialTransactions }) {
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [pendingDelete])
 
+  // Tutup popup edit dengan tombol Escape
+  useEffect(() => {
+    if (!editingId) return
+    function onKeyDown(e) {
+      if (e.key === 'Escape') setEditingId(null)
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [editingId])
+
   async function confirmDelete() {
     if (!pendingDelete) return
     setDeleting(true)
@@ -103,6 +114,55 @@ export default function TransactionsList({ initialTransactions }) {
   }
 
   const editingTransaction = transactions.find((t) => t.id === editingId)
+
+  // Pindah halaman lalu bawa layar ke posisi yang nyambung dengan arah navigasi:
+  // "Berikutnya" ke transaksi paling atas, "Sebelumnya" ke transaksi paling bawah
+  const listRef = useRef(null)
+  const scrollTarget = useRef(null)
+  function goToPage(nextPage, target) {
+    scrollTarget.current = target
+    setPage(nextPage)
+  }
+
+  // Scroll setelah halaman baru dirender, supaya posisi akhir daftar sudah sesuai isi halaman baru
+  useEffect(() => {
+    const target = scrollTarget.current
+    if (!target) return
+    scrollTarget.current = null
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    listRef.current?.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: target })
+  }, [page])
+
+  // Navigasi halaman, dipakai di atas dan di bawah daftar supaya tidak perlu scroll jauh
+  function renderPagination(spacingClass) {
+    if (transactions.length === 0 || totalPages <= 1) return null
+    return (
+      <div className={`flex items-center justify-between border-brass/10 ${spacingClass}`}>
+        <span className="text-xs text-parchment-dim">
+          {pageStart + 1}–{Math.min(pageStart + PAGE_SIZE, transactions.length)} dari {transactions.length} transaksi
+        </span>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => goToPage(Math.max(1, page - 1), 'end')}
+            disabled={page === 1}
+            className="text-xs text-parchment-dim hover:text-brass-soft disabled:opacity-30 disabled:hover:text-parchment-dim transition-colors"
+          >
+            Sebelumnya
+          </button>
+          <span className="text-xs text-parchment-dim">
+            {page} / {totalPages}
+          </span>
+          <button
+            onClick={() => goToPage(Math.min(totalPages, page + 1), 'start')}
+            disabled={page === totalPages}
+            className="text-xs text-parchment-dim hover:text-brass-soft disabled:opacity-30 disabled:hover:text-parchment-dim transition-colors"
+          >
+            Berikutnya
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -151,25 +211,16 @@ export default function TransactionsList({ initialTransactions }) {
         </div>
       </div>
 
-      {/* Form edit muncul di atas kalau sedang mengedit */}
-      {editingTransaction && (
-        <TransactionForm
-          editData={editingTransaction}
-          onCancel={() => setEditingId(null)}
-          onSuccess={(updated) => {
-            setTransactions((prev) => prev.map((t) => (t.id === updated.id ? updated : t)))
-            setEditingId(null)
-          }}
-        />
-      )}
-
       {/* Daftar transaksi */}
       {/* Saat filter dimuat, daftar lama tetap tampil tapi meredup */}
       <div
-        className="pending-fade bg-panel border border-brass/15 rounded-lg p-6"
+        ref={listRef}
+        className="pending-fade bg-panel border border-brass/15 rounded-lg p-6 scroll-my-4"
         data-pending={loading}
         aria-busy={loading}
       >
+        {renderPagination('mb-4 pb-4 border-b')}
+
         {transactions.length === 0 ? (
           <p className="text-sm text-parchment-dim text-center py-8">Tidak ada transaksi yang cocok dengan filter.</p>
         ) : (
@@ -213,36 +264,40 @@ export default function TransactionsList({ initialTransactions }) {
           </ul>
         )}
 
-        {transactions.length > 0 && totalPages > 1 && (
-          <div className="flex items-center justify-between mt-4 pt-4 border-t border-brass/10">
-            <span className="text-xs text-parchment-dim">
-              {pageStart + 1}–{Math.min(pageStart + PAGE_SIZE, transactions.length)} dari {transactions.length} transaksi
-            </span>
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={page === 1}
-                className="text-xs text-parchment-dim hover:text-brass-soft disabled:opacity-30 disabled:hover:text-parchment-dim transition-colors"
-              >
-                Sebelumnya
-              </button>
-              <span className="text-xs text-parchment-dim">
-                {page} / {totalPages}
-              </span>
-              <button
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                disabled={page === totalPages}
-                className="text-xs text-parchment-dim hover:text-brass-soft disabled:opacity-30 disabled:hover:text-parchment-dim transition-colors"
-              >
-                Berikutnya
-              </button>
-            </div>
-          </div>
-        )}
+        {renderPagination('mt-4 pt-4 border-t')}
       </div>
 
+      {/* Popup dirender ke body lewat portal: wrapper halaman (.page-enter) punya animasi transform,
+          yang membuat position: fixed di dalamnya relatif ke halaman, bukan ke layar */}
+      {/* Popup edit transaksi */}
+      {editingTransaction && createPortal(
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-charcoal/70 backdrop-blur-sm px-4 py-6"
+          onClick={() => setEditingId(null)}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Edit transaksi"
+            className="w-full max-w-lg max-h-full overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <TransactionForm
+              key={editingTransaction.id}
+              editData={editingTransaction}
+              onCancel={() => setEditingId(null)}
+              onSuccess={(updated) => {
+                setTransactions((prev) => prev.map((t) => (t.id === updated.id ? updated : t)))
+                setEditingId(null)
+              }}
+            />
+          </div>
+        </div>,
+        document.body
+      )}
+
       {/* Konfirmasi hapus */}
-      {pendingDelete && (
+      {pendingDelete && createPortal(
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-charcoal/70 backdrop-blur-sm px-4"
           onClick={() => !deleting && setPendingDelete(null)}
@@ -289,7 +344,8 @@ export default function TransactionsList({ initialTransactions }) {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   )

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { getCategoriesByType } from '@/lib/categories'
 import { formatDateLocal } from '@/lib/date'
 
-export default function TransactionForm({ onSuccess, onCancel, editData }) {
+export default function TransactionForm({ onSuccess, onCancel, editData, autoFocusAmount = false }) {
   const router = useRouter()
   const today = formatDateLocal(new Date())
   const isEditMode = Boolean(editData)
@@ -103,6 +103,7 @@ export default function TransactionForm({ onSuccess, onCancel, editData }) {
           required
           min="0"
           step="1"
+          autoFocus={autoFocusAmount}
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
           placeholder="50000"
