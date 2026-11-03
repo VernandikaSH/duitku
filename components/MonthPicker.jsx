@@ -116,7 +116,7 @@ export default function MonthPicker({ year, month, onSelect, children }) {
                       isSelected
                         ? 'bg-brass text-charcoal font-medium'
                         : isThisMonth
-                          ? 'text-brass-soft ring-1 ring-inset ring-brass/30 hover:bg-panel'
+                          ? 'text-brass-soft ring-1 ring-inset ring-line-accent hover:bg-panel'
                           : 'text-parchment-dim hover:bg-panel hover:text-parchment'
                     }`}
                   >

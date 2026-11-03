@@ -5,7 +5,7 @@ export default function AddButton({ children, className = '', ...props }) {
   return (
     <button
       type="button"
-      className={`w-full flex items-center justify-center gap-2 py-6 rounded-lg border border-dashed border-brass/25 bg-panel/40 text-parchment-dim transition-colors hover:border-brass/50 hover:text-brass-soft ${className}`}
+      className={`w-full flex items-center justify-center gap-2 py-6 rounded-lg border border-dashed border-line-accent bg-tint-panel text-parchment-dim transition-colors hover:border-line-hover hover:text-brass-soft ${className}`}
       {...props}
     >
       <span aria-hidden="true" className="text-xl">

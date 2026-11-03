@@ -8,8 +8,8 @@
 // Tiap tombol memakai aria-pressed, jadi pembaca layar menyebut "ditekan / tidak ditekan".
 
 const SELECTED = {
-  brass: 'bg-brass/10 text-brass-soft border-brass/30',
-  loss: 'bg-loss/10 text-loss border-loss/30',
+  brass: 'bg-tint-brass text-brass-soft border-line-accent',
+  loss: 'bg-tint-loss text-loss border-line-danger',
 }
 const IDLE = 'bg-charcoal2 text-parchment-dim border-transparent hover:text-parchment'
 

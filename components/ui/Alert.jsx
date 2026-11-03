@@ -1,5 +1,5 @@
 const TONES = {
-  error: 'text-loss bg-loss/10 border-loss/20',
+  error: 'text-loss bg-tint-loss border-line-danger',
 }
 
 // Kotak pesan, mis. error form.

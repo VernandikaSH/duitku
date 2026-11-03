@@ -6,7 +6,7 @@
 // supaya tidak ada dua kelas warna yang bertabrakan (mis. border-line + border-loss).
 const CONTROL_BASE =
   'w-full h-10 rounded-md bg-charcoal2 border px-3 text-sm text-parchment ' +
-  'placeholder:text-parchment-dim/50 focus:outline-none focus:ring-1 ' +
+  'placeholder:text-parchment-faint focus:outline-none focus:ring-1 ' +
   'disabled:opacity-60 disabled:cursor-not-allowed'
 
 const CONTROL_STATE = {
@@ -45,7 +45,7 @@ export function FieldShell({ id, label, optional, hint, error, children }) {
       {label && (
         <label htmlFor={id} className={LABEL}>
           {label}
-          {optional && <span className="text-parchment-dim/60"> (opsional)</span>}
+          {optional && <span className="text-parchment-faint"> (opsional)</span>}
         </label>
       )}
       {children}

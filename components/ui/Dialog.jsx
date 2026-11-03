@@ -97,7 +97,7 @@ export default function Dialog({ open, onClose, role = 'dialog', labelledBy, lab
 
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-charcoal/70 backdrop-blur-sm px-4 py-6"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-overlay backdrop-blur-sm px-4 py-6"
       onClick={() => onCloseRef.current?.()}
     >
       <div

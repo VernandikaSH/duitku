@@ -93,8 +93,10 @@ komponen asli aplikasi, lengkap dengan potongan kodenya.
 
 **Token** — `lib/tokens.js` adalah satu-satunya sumber warna. `tailwind.config.js` memakainya
 untuk kelas seperti `bg-panel` / `text-brass`, dan grafik SVG memakai nilai yang sama lewat
-`import { chart } from '@/lib/tokens'`. Warna garis `line` dihitung dari `brass`, jadi ikut
-berubah kalau warna aksen diganti.
+`import { chart } from '@/lib/tokens'`. Warna transparan juga berupa token semantik yang
+dihitung dari palet dasar — `line` / `line-accent` / `line-hover` / `line-danger` untuk border,
+`tint-*` untuk latar tipis, `overlay` untuk latar popup, `parchment-faint` untuk teks samar —
+jadi komponen tidak pernah menulis opacity langsung seperti `border-brass/30`.
 
 **Komponen `components/ui/`:**
 
