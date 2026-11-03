@@ -95,7 +95,8 @@ komponen asli aplikasi, lengkap dengan potongan kodenya.
 untuk kelas seperti `bg-panel` / `text-brass`, dan grafik SVG memakai nilai yang sama lewat
 `import { chart } from '@/lib/tokens'`. Warna transparan juga berupa token semantik yang
 dihitung dari palet dasar — `line` / `line-accent` / `line-hover` / `line-danger` untuk border,
-`tint-*` untuk latar tipis, `overlay` untuk latar popup, `parchment-faint` untuk teks samar —
+`tint-*` untuk latar tipis, `overlay` untuk latar popup, `parchment-faint` khusus placeholder
+(kontras ~2,9:1, jadi tidak dipakai untuk teks yang harus terbaca) —
 jadi komponen tidak pernah menulis opacity langsung seperti `border-brass/30`.
 
 **Komponen `components/ui/`:**

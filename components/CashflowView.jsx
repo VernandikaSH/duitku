@@ -146,7 +146,7 @@ function ChartFrame({ rows, height, values, ariaLabel, describe, renderMarks, re
               onPointerEnter={() => setActive(i)}
               onFocus={() => setActive(i)}
               onBlur={() => setActive(null)}
-              className="outline-none focus-visible:stroke-brass/40"
+              className="outline-none focus-visible:stroke-line-hover"
             />
           ))}
         </svg>

@@ -45,7 +45,8 @@ export function FieldShell({ id, label, optional, hint, error, children }) {
       {label && (
         <label htmlFor={id} className={LABEL}>
           {label}
-          {optional && <span className="text-parchment-faint"> (opsional)</span>}
+          {/* Sewarna label (parchment-dim, kontras 5,5:1): ini info penting, jangan disamarkan */}
+          {optional && ' (opsional)'}
         </label>
       )}
       {children}

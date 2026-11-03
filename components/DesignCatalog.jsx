@@ -200,9 +200,14 @@ export default function DesignCatalog() {
           <Example label="Lebar penuh — tinggi tetap 40px, lebar lewat className" code={`<Button type="submit" className="w-full">Masuk</Button>`}>
             <Button className="w-full">Masuk</Button>
           </Example>
-          <Example label="Sejajar dengan Input — tinggi sama, tanpa atur padding" code={`<Input placeholder="Cari..." />\n<Button variant="secondary">Reset</Button>`}>
-            <div className="flex w-full gap-3">
-              <Input placeholder="Cari transaksi..." className="flex-1" />
+          <Example
+            label="Sejajar dengan Input — tinggi sama, tanpa atur padding"
+            code={`<div className="flex items-end gap-3">\n  <Input label="Cari" placeholder="Nama kategori..." />\n  <Button variant="secondary">Reset</Button>\n</div>`}
+          >
+            <div className="flex w-full items-end gap-3">
+              <div className="flex-1">
+                <Input label="Cari" placeholder="Nama kategori..." />
+              </div>
               <Button variant="secondary">Reset</Button>
             </div>
           </Example>
