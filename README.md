@@ -1,7 +1,7 @@
 # Duitku
 
-Aplikasi web pencatat keuangan pribadi. Catat pemasukan & pengeluaran, lihat ringkasannya
-lewat grafik, dan telusuri riwayat transaksi — semuanya dalam satu dashboard yang bersih.
+Aplikasi web pencatat keuangan pribadi. Catat pemasukan & pengeluaran, lihat ringkasan per bulan
+dan tren 12 bulan lewat grafik, dan telusuri riwayat transaksi — semuanya dalam satu dashboard yang bersih.
 
 Dibangun di atas **free tier sepenuhnya** (Supabase + Vercel), jadi bisa dipakai jangka
 panjang tanpa biaya server.
@@ -11,11 +11,11 @@ panjang tanpa biaya server.
 ```
 User login (Supabase Auth)
         ↓
-Tambah transaksi (form → API route)
+Tambah / edit transaksi (form → API route, divalidasi di server)
         ↓
 Supabase — tabel `transactions`, diamankan RLS per-user
         ↓
-Dashboard (grafik Recharts) + Riwayat (filter)
+Dashboard (ringkasan bulanan) · Riwayat (filter) · Cashflow (grafik SVG 12 bulan)
 ```
 
 ---
@@ -23,12 +23,20 @@ Dashboard (grafik Recharts) + Riwayat (filter)
 ## Fitur
 
 - **Autentikasi** — login & register via Supabase Auth, sesi auto-refresh lewat middleware
-- **Catat transaksi** — form pemasukan/pengeluaran yang tersimpan lewat API route
-- **Dashboard visual** — ringkasan saldo & grafik tren keuangan menggunakan Recharts
-- **Riwayat transaksi** — daftar lengkap dengan filter
+- **Catat & edit transaksi** — form pemasukan/pengeluaran dengan kategori, nominal berformat
+  ribuan otomatis (`1.000.000`), dan validasi yang sama di server untuk tambah maupun edit
+- **Dashboard bulanan** — saldo, total pemasukan/pengeluaran, rincian per kategori, dan
+  transaksi terbaru; ganti bulan lewat tombol atau pemilih bulan
+- **Riwayat transaksi** — daftar lengkap dengan filter tanggal & kategori, paginasi,
+  edit dan hapus lewat popup
+- **Cashflow** — grafik pemasukan vs pengeluaran, net, dan saldo 12 bulan terakhir
+  (digambar sendiri dengan SVG, tanpa library grafik)
 - **Data terisolasi per user** — Row Level Security (RLS) di Supabase memastikan satu user
   tidak bisa membaca data user lain, bahkan lewat request langsung ke API
-- **Desain kalem** — palet hijau/biru custom lewat Tailwind, dirancang enak dilihat lama
+- **Design system sendiri** — token warna dan komponen UI yang dipakai di seluruh aplikasi,
+  dengan katalog publik di [`/design`](#design-system)
+- **Aksesibel** — label terhubung ke input, error field dibacakan pembaca layar,
+  popup bisa dipakai penuh dengan keyboard (focus trap)
 
 ---
 
@@ -36,11 +44,11 @@ Dashboard (grafik Recharts) + Riwayat (filter)
 
 | Layer | Teknologi |
 |---|---|
-| Framework | Next.js (App Router) |
-| Styling | Tailwind CSS (palet hijau/biru custom) |
+| Framework | Next.js 14 (App Router) + React 18 |
+| Styling | Tailwind CSS, warna dari token di `lib/tokens.js` (tema "Brankas": charcoal + brass) |
 | Auth | Supabase Auth |
 | Database | Supabase (PostgreSQL) + Row Level Security |
-| Grafik | Recharts |
+| Grafik | SVG custom (`components/CashflowView.jsx`) |
 | Hosting | Vercel |
 
 **Struktur project:**
@@ -48,20 +56,64 @@ Dashboard (grafik Recharts) + Riwayat (filter)
 ```
 duitku/
 ├── app/
-│   ├── layout.jsx           # Root layout
-│   ├── page.jsx             # Redirect ke /dashboard atau /login
-│   ├── globals.css          # Tailwind base styles
-│   ├── login/ · register/   # Halaman autentikasi
-│   ├── dashboard/           # Ringkasan + grafik
-│   └── api/                 # API route transaksi
+│   ├── layout.jsx             # Root layout (font, warna dasar)
+│   ├── page.jsx               # Redirect ke /dashboard atau /login
+│   ├── globals.css            # Tailwind base + animasi
+│   ├── login/ · register/     # Halaman autentikasi
+│   ├── dashboard/             # Ringkasan bulanan
+│   ├── transactions/          # Riwayat + filter
+│   ├── cashflow/              # Grafik 12 bulan
+│   ├── design/                # Katalog design system (publik)
+│   └── api/transactions/      # API route tambah/ambil/edit/hapus
+├── components/
+│   ├── ui/                    # Design system: komponen umum (Button, Input, Card, Dialog, ...)
+│   └── *.jsx                  # Komponen domain Duitku (TransactionForm, TransactionRow, MonthNav, ...)
 ├── lib/
-│   ├── supabase-browser.js  # Client untuk komponen 'use client'
-│   └── supabase-server.js   # Client untuk server components & API routes
-├── middleware.js            # Auto-refresh sesi login
+│   ├── tokens.js              # Sumber tunggal warna (dipakai Tailwind & grafik)
+│   ├── format.js              # Format Rupiah, tanggal, pemisah ribuan
+│   ├── date.js                # Nama bulan, format bulan, tanggal lokal
+│   ├── api.js                 # requireUser() & validateTransaction() untuk API route
+│   ├── categories.js          # Daftar kategori pemasukan/pengeluaran
+│   ├── navigation.js          # Helper klik (klik tengah/Ctrl tetap buka tab baru)
+│   ├── supabase-browser.js    # Client untuk komponen 'use client'
+│   └── supabase-server.js     # Client untuk server components & API routes
+├── middleware.js              # Auto-refresh sesi login + proteksi halaman
+├── scripts/reset-password.mjs # Utilitas admin sekali pakai (butuh service_role key)
 ├── supabase/
-│   └── schema.sql           # Skema tabel transactions + RLS
+│   └── schema.sql             # Skema tabel transactions + RLS
 └── .env.local.example
 ```
+
+---
+
+## Design System
+
+Katalog lengkap bisa dibuka tanpa login di **`/design`** — semua contoh di sana memakai
+komponen asli aplikasi, lengkap dengan potongan kodenya.
+
+**Token** — `lib/tokens.js` adalah satu-satunya sumber warna. `tailwind.config.js` memakainya
+untuk kelas seperti `bg-panel` / `text-brass`, dan grafik SVG memakai nilai yang sama lewat
+`import { chart } from '@/lib/tokens'`. Warna garis `line` dihitung dari `brass`, jadi ikut
+berubah kalau warna aksen diganti.
+
+**Komponen `components/ui/`:**
+
+| Kelompok | Komponen |
+|---|---|
+| Aksi | `Button` (primary/secondary/danger, tinggi tetap 40px), `TextLink` (otomatis `<Link>` atau `<button>`), `AddButton` |
+| Form | `Input`, `Select`, `MoneyInput` — label, `hint`, dan `error` terhubung lewat `useId` + `aria-describedby`; `SegmentedControl` (`aria-pressed`) |
+| Tata letak | `Card` (padding sm/md/lg), `PageContainer`, `Dialog` (portal + focus trap) |
+| Teks & data | `PageHeader`, `SectionHeader`, `EmptyState`, `Logo`, `Badge`, `Alert`, `Amount` |
+
+**Aturan yang dipegang:**
+
+- Komponen di `ui/` tidak tahu soal data Duitku; komponen yang tahu soal transaksi/bulan
+  (mis. `TransactionRow`, `MonthNav`) tinggal di `components/`.
+- Sesuatu baru dijadikan komponen setelah polanya berulang, bukan sebelumnya.
+- `className` dari luar hanya untuk lebar/posisi. Ukuran, warna, dan state diatur di komponen,
+  supaya tidak ada kelas Tailwind yang saling bertabrakan.
+- State tidak boleh hanya terlihat — juga harus terbaca: `disabled` mematikan hover,
+  error memakai `aria-invalid`, tombol pilihan memakai `aria-pressed`.
 
 ---
 
@@ -87,7 +139,7 @@ Isi kedua value tersebut ke `.env.local`.
 npm install
 npm run dev
 ```
-Buka http://localhost:3000
+Buka http://localhost:3000 (katalog komponen di http://localhost:3000/design)
 
 **5. Deploy ke Vercel**
 Push ke GitHub → import repo di Vercel → masukkan environment variables yang sama
@@ -103,8 +155,11 @@ seperti di `.env.local` → Deploy.
   dari sisi klien, policy RLS di `schema.sql` adalah lapisan pertahanan yang sebenarnya.
   Kalau menambah tabel baru, **wajib** ikut menulis policy-nya — tabel tanpa RLS = data
   terbuka untuk semua orang.
+- **Validasi ada di server.** Pengecekan di form hanya untuk umpan balik cepat;
+  `validateTransaction()` di `lib/api.js` tetap memeriksa ulang setiap tambah & edit.
 - **Middleware itu penting.** Tanpa `middleware.js`, sesi login akan expired diam-diam dan
-  user tiba-tiba terlempar ke halaman login di tengah pemakaian.
+  user tiba-tiba terlempar ke halaman login di tengah pemakaian. Middleware juga yang
+  menentukan halaman publik (`/login`, `/register`, `/design`).
 - **Region Supabase tidak bisa diubah** setelah project dibuat. Kalau terlanjur salah pilih,
   harus buat project baru.
 - **Environment variables di Vercel** harus dimasukkan manual — tidak terbawa dari `.env.local`,
@@ -114,8 +169,6 @@ seperti di `.env.local` → Deploy.
 
 ## Saran Pengembangan
 
-- **Kategori transaksi** — tambahkan kategori (makan, transport, tagihan) beserta breakdown
-  pie chart di dashboard, supaya kelihatan uang paling banyak habis ke mana.
 - **Budget & alert** — set batas pengeluaran bulanan per kategori, dengan indikator saat
   mendekati/melewati batas.
 - **Transaksi berulang** — auto-input untuk pengeluaran rutin (langganan, cicilan, sewa).
@@ -125,5 +178,7 @@ seperti di `.env.local` → Deploy.
 - **Impor otomatis** — hubungkan dengan bot struk (seperti Telegram Nota Bot) agar transaksi
   bisa masuk lewat foto struk, bukan hanya input manual.
 - **Multi-currency / multi-akun** — pisahkan saldo per dompet (cash, bank, e-wallet).
+- **Token spacing & tipografi** — saat ini token baru mencakup warna; ukuran teks dan jarak
+  masih memakai skala bawaan Tailwind.
 
 ---

@@ -12,6 +12,12 @@ import Card from '@/components/ui/Card'
 import SectionHeader from '@/components/ui/SectionHeader'
 import Alert from '@/components/ui/Alert'
 import MoneyInput from '@/components/ui/MoneyInput'
+import SegmentedControl from '@/components/ui/SegmentedControl'
+
+const TYPE_OPTIONS = [
+  { value: 'expense', label: 'Pengeluaran', tone: 'loss' },
+  { value: 'income', label: 'Pemasukan', tone: 'brass' },
+]
 
 export default function TransactionForm({ onSuccess, onCancel, editData, autoFocusAmount = false }) {
   const router = useRouter()
@@ -27,6 +33,7 @@ export default function TransactionForm({ onSuccess, onCancel, editData, autoFoc
   const [date, setDate] = useState(editData?.date || today)
   const [note, setNote] = useState(editData?.note || '')
   const [error, setError] = useState('')
+  const [amountError, setAmountError] = useState('') // error khusus field nominal
   const [loading, setLoading] = useState(false)
 
   function handleTypeChange(newType) {
@@ -38,6 +45,13 @@ export default function TransactionForm({ onSuccess, onCancel, editData, autoFoc
   async function handleSubmit(e) {
     e.preventDefault()
     setError('')
+
+    // Validasi di sisi klien supaya pesan muncul tepat di bawah field-nya.
+    // Server tetap memvalidasi ulang (lib/api.js), ini hanya untuk umpan balik cepat.
+    if (!(Number(amount) > 0)) {
+      setAmountError('Isi jumlah lebih dari 0')
+      return
+    }
     setLoading(true)
 
     const url = isEditMode ? `/api/transactions/${editData.id}` : '/api/transactions'
@@ -82,38 +96,23 @@ export default function TransactionForm({ onSuccess, onCancel, editData, autoFoc
         }
       />
 
-      {/* Toggle income/expense */}
-      <div className="flex gap-2">
-        <button
-          type="button"
-          onClick={() => handleTypeChange('expense')}
-          className={`flex-1 py-2 rounded-md text-sm transition-colors border ${
-            type === 'expense'
-              ? 'bg-loss/10 text-loss border-loss/30'
-              : 'bg-charcoal2 text-parchment-dim border-transparent'
-          }`}
-        >
-          Pengeluaran
-        </button>
-        <button
-          type="button"
-          onClick={() => handleTypeChange('income')}
-          className={`flex-1 py-2 rounded-md text-sm transition-colors border ${
-            type === 'income'
-              ? 'bg-brass/10 text-brass-soft border-brass/30'
-              : 'bg-charcoal2 text-parchment-dim border-transparent'
-          }`}
-        >
-          Pemasukan
-        </button>
-      </div>
+      <SegmentedControl
+        label="Jenis transaksi"
+        value={type}
+        onChange={handleTypeChange}
+        options={TYPE_OPTIONS}
+      />
 
       <MoneyInput
         label="Jumlah (Rp)"
-        required
+        aria-required="true"
         autoFocus={autoFocusAmount}
         value={amount}
-        onValueChange={setAmount}
+        onValueChange={(v) => {
+          setAmount(v)
+          if (amountError) setAmountError('')
+        }}
+        error={amountError}
         placeholder="50.000"
       />
 
@@ -153,7 +152,7 @@ export default function TransactionForm({ onSuccess, onCancel, editData, autoFoc
       <Button
         type="submit"
         disabled={loading}
-        className="w-full py-2.5"
+        className="w-full"
       >
         {loading ? 'Menyimpan...' : isEditMode ? 'Update Transaksi' : 'Simpan Transaksi'}
       </Button>

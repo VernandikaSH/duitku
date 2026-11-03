@@ -77,7 +77,7 @@ export default function LoginPage() {
         <Button
           type="submit"
           disabled={loading}
-          className="w-full py-2.5"
+          className="w-full"
         >
           {loading ? 'Memproses...' : 'Masuk'}
         </Button>

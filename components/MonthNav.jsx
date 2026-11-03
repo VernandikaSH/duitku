@@ -3,6 +3,7 @@
 import TextLink from '@/components/ui/TextLink'
 import MonthPicker from './MonthPicker'
 import Card from '@/components/ui/Card'
+import Badge from '@/components/ui/Badge'
 import { MONTH_NAMES, formatMonthParam } from '@/lib/date'
 import { isPlainLeftClick } from '@/lib/navigation'
 
@@ -46,9 +47,7 @@ export default function MonthNav({ year, month, onNavigate, onSelect }) {
           <>{MONTH_NAMES[month - 1]} {year}</>
         )}
         {isCurrentMonth && (
-          <span className="block sm:inline sm:ml-2 text-xs font-sans not-italic text-brass-soft border border-brass/30 px-2 py-0.5 rounded-full mt-1 sm:mt-0">
-            Bulan Ini
-          </span>
+          <Badge className="block w-fit mx-auto mt-1 sm:inline-block sm:ml-2 sm:mt-0">Bulan Ini</Badge>
         )}
       </span>
 

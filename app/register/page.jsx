@@ -30,7 +30,10 @@ export default function RegisterPage() {
     setLoading(false)
 
     if (error) {
-      // Tampilkan pesan asli dari Supabase supaya lebih mudah di-debug
+      // Tampilkan pesan asli dari Supabase supaya lebih mudah di-debug.
+      // Catatan: email yang sudah terdaftar TIDAK masuk ke sini selama konfirmasi email aktif;
+      // Supabase membalas sukses tanpa mengirim email (lihat layar sukses di bawah).
+      // 'User already registered' hanya muncul kalau konfirmasi email dimatikan.
       console.error('Supabase signUp error:', error)
       setError(error.message === 'User already registered'
         ? 'Email sudah terdaftar. Coba login.'
@@ -45,12 +48,16 @@ export default function RegisterPage() {
     return (
       <AuthLayout className="text-center">
         <h1 className="text-xl font-serif italic text-brass-soft mb-2">Cek email kamu</h1>
+        {/* Pesan sengaja netral: Supabase tidak memberi tahu apakah email sudah terdaftar
+            (dan tidak mengirim email kalau sudah), supaya form ini tidak bisa dipakai
+            untuk mengecek email siapa yang punya akun (email enumeration). */}
         <p className="text-sm text-parchment-dim">
-          Kami sudah mengirim link konfirmasi ke <strong className="text-parchment">{email}</strong>.
-          Klik link tersebut untuk mengaktifkan akun, lalu kembali ke halaman login.
+          Kalau <strong className="text-parchment">{email}</strong> belum terdaftar, kami sudah mengirim
+          link konfirmasi ke sana. Klik link tersebut untuk mengaktifkan akun.
         </p>
+        <p className="text-sm text-parchment-dim mt-3">Sudah pernah daftar? Langsung login saja.</p>
         <TextLink href="/login" className="inline-block mt-6 text-sm">
-          Kembali ke Login
+          Ke halaman Login
         </TextLink>
       </AuthLayout>
     )
@@ -83,7 +90,8 @@ export default function RegisterPage() {
           minLength={6}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          placeholder="Minimal 6 karakter"
+          hint="Minimal 6 karakter"
+          placeholder="••••••••"
         />
 
         {error && (
@@ -93,7 +101,7 @@ export default function RegisterPage() {
         <Button
           type="submit"
           disabled={loading}
-          className="w-full py-2.5"
+          className="w-full"
         >
           {loading ? 'Memproses...' : 'Daftar'}
         </Button>

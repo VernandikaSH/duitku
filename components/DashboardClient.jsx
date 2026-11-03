@@ -6,6 +6,7 @@ import TransactionForm from './TransactionForm'
 import TransactionRow from './TransactionRow'
 import PageContainer from '@/components/ui/PageContainer'
 import Card from '@/components/ui/Card'
+import AddButton from '@/components/ui/AddButton'
 import SectionHeader from '@/components/ui/SectionHeader'
 import EmptyState from '@/components/ui/EmptyState'
 import Amount from '@/components/ui/Amount'
@@ -113,13 +114,7 @@ export default function DashboardClient({ transactions }) {
         {showForm ? (
           <TransactionForm autoFocusAmount onSuccess={() => setShowForm(false)} />
         ) : (
-          <button
-            onClick={() => setShowForm(true)}
-            className="w-full flex items-center justify-center gap-2 bg-panel/40 rounded-lg border border-dashed border-brass/25 hover:border-brass/50 transition-colors text-parchment-dim hover:text-brass-soft py-6"
-          >
-            <span className="text-xl">+</span>
-            <span className="text-sm">Tambah Transaksi Baru</span>
-          </button>
+          <AddButton onClick={() => setShowForm(true)}>Tambah Transaksi Baru</AddButton>
         )}
       </div>
 

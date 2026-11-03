@@ -3,8 +3,10 @@
 import { useState } from 'react'
 import { palette, chart } from '@/lib/tokens'
 
+import AddButton from '@/components/ui/AddButton'
 import Alert from '@/components/ui/Alert'
 import Amount from '@/components/ui/Amount'
+import Badge from '@/components/ui/Badge'
 import Button from '@/components/ui/Button'
 import Card from '@/components/ui/Card'
 import Dialog from '@/components/ui/Dialog'
@@ -15,6 +17,7 @@ import MoneyInput from '@/components/ui/MoneyInput'
 import PageContainer from '@/components/ui/PageContainer'
 import PageHeader from '@/components/ui/PageHeader'
 import SectionHeader from '@/components/ui/SectionHeader'
+import SegmentedControl from '@/components/ui/SegmentedControl'
 import Select from '@/components/ui/Select'
 import TextLink from '@/components/ui/TextLink'
 import MonthNav from '@/components/MonthNav'
@@ -28,8 +31,10 @@ const SECTIONS = [
   ['button', 'Button'],
   ['textlink', 'TextLink'],
   ['form', 'Form'],
+  ['segmented', 'SegmentedControl'],
   ['card', 'Card'],
   ['feedback', 'Alert & EmptyState'],
+  ['badge', 'Badge & AddButton'],
   ['amount', 'Amount'],
   ['dialog', 'Dialog'],
   ['domain', 'Komponen domain'],
@@ -86,6 +91,7 @@ function Swatch({ name, value, hint }) {
 export default function DesignCatalog() {
   const [amount, setAmount] = useState('1500000')
   const [dialogOpen, setDialogOpen] = useState(false)
+  const [txType, setTxType] = useState('expense')
   const [month, setMonth] = useState(() => {
     const now = new Date()
     return { year: now.getFullYear(), month: now.getMonth() + 1 }
@@ -163,32 +169,42 @@ export default function DesignCatalog() {
           </Example>
         </Section>
 
-        <Section id="button" title="Button" description="Tombol aksi. Hover tidak aktif saat disabled">
+        <Section
+          id="button"
+          title="Button"
+          description="Tombol aksi. Tinggi tetap 40px (sama dengan Input), default type=&quot;button&quot;, hover tidak aktif saat disabled"
+        >
           <Example
             label="variant"
             code={`<Button>Simpan</Button>\n<Button variant="secondary">Batal</Button>\n<Button variant="danger">Hapus</Button>`}
           >
-            <Button className="px-4 py-2">Simpan</Button>
-            <Button variant="secondary" className="px-4 py-2">
+            <Button>Simpan</Button>
+            <Button variant="secondary">
               Batal
             </Button>
-            <Button variant="danger" className="px-4 py-2">
+            <Button variant="danger">
               Hapus
             </Button>
           </Example>
           <Example label="disabled" code={`<Button disabled={loading}>Memproses...</Button>`}>
-            <Button disabled className="px-4 py-2">
+            <Button disabled>
               Memproses...
             </Button>
-            <Button variant="secondary" disabled className="px-4 py-2">
+            <Button variant="secondary" disabled>
               Batal
             </Button>
-            <Button variant="danger" disabled className="px-4 py-2">
+            <Button variant="danger" disabled>
               Menghapus...
             </Button>
           </Example>
-          <Example label="Lebar penuh — ukuran lewat className" code={`<Button type="submit" className="w-full py-2.5">Masuk</Button>`}>
-            <Button className="w-full py-2.5">Masuk</Button>
+          <Example label="Lebar penuh — tinggi tetap 40px, lebar lewat className" code={`<Button type="submit" className="w-full">Masuk</Button>`}>
+            <Button className="w-full">Masuk</Button>
+          </Example>
+          <Example label="Sejajar dengan Input — tinggi sama, tanpa atur padding" code={`<Input placeholder="Cari..." />\n<Button variant="secondary">Reset</Button>`}>
+            <div className="flex w-full gap-3">
+              <Input placeholder="Cari transaksi..." className="flex-1" />
+              <Button variant="secondary">Reset</Button>
+            </div>
           </Example>
         </Section>
 
@@ -221,7 +237,11 @@ export default function DesignCatalog() {
           </Example>
         </Section>
 
-        <Section id="form" title="Form" description="Tinggi seragam 40px. Label otomatis terhubung ke input (useId)">
+        <Section
+          id="form"
+          title="Form"
+          description="Tinggi seragam 40px. Label, hint, dan error otomatis terhubung ke input (useId + aria-describedby)"
+        >
           <Example
             code={`<Input label="Email" type="email" placeholder="nama@email.com" />\n<Select label="Kategori">...</Select>\n<MoneyInput label="Jumlah (Rp)" value={amount} onValueChange={setAmount} />\n<Input label="Catatan" optional />`}
           >
@@ -241,6 +261,43 @@ export default function DesignCatalog() {
           <p className="text-xs text-parchment-dim">
             Nilai mentah MoneyInput: <code className="text-parchment">&quot;{amount}&quot;</code> — titik ribuan hanya untuk tampilan.
           </p>
+          <Example
+            label="hint & error — error menggantikan hint, border merah, aria-invalid aktif"
+            code={`<Input label="Password" type="password" hint="Minimal 6 karakter" />\n<Input label="Jumlah (Rp)" error="Isi jumlah lebih dari 0" />`}
+          >
+            <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2">
+              <Input label="Password" type="password" hint="Minimal 6 karakter" placeholder="••••••••" />
+              <Input label="Jumlah (Rp)" defaultValue="0" error="Isi jumlah lebih dari 0" />
+              <Select label="Kategori" error="Pilih kategori" defaultValue="">
+                <option value="" disabled>
+                  Pilih kategori
+                </option>
+                <option>Belanja</option>
+              </Select>
+            </div>
+          </Example>
+        </Section>
+
+        <Section
+          id="segmented"
+          title="SegmentedControl"
+          description="Pilih satu dari beberapa opsi. Tiap tombol memakai aria-pressed"
+        >
+          <Example
+            label={`Terpilih: "${txType}"`}
+            code={`<SegmentedControl\n  label="Jenis transaksi"\n  value={type}\n  onChange={setType}\n  options={[\n    { value: 'expense', label: 'Pengeluaran', tone: 'loss' },\n    { value: 'income', label: 'Pemasukan', tone: 'brass' },\n  ]}\n/>`}
+          >
+            <SegmentedControl
+              label="Jenis transaksi"
+              value={txType}
+              onChange={setTxType}
+              className="w-full"
+              options={[
+                { value: 'expense', label: 'Pengeluaran', tone: 'loss' },
+                { value: 'income', label: 'Pemasukan', tone: 'brass' },
+              ]}
+            />
+          </Example>
         </Section>
 
         <Section id="card" title="Card" description="Panel dasar. Padding lebih rapat di HP, normal mulai layar sm">
@@ -268,6 +325,17 @@ export default function DesignCatalog() {
           </Example>
         </Section>
 
+        <Section id="badge" title="Badge & AddButton" description="Label pil kecil dan tombol tambah bergaris putus-putus">
+          <Example label="Badge — aman di dalam judul serif italic" code={`<Badge>Bulan Ini</Badge>`}>
+            <span className="font-serif italic text-parchment">
+              November 2026 <Badge className="ml-2">Bulan Ini</Badge>
+            </span>
+          </Example>
+          <Example label="AddButton" code={`<AddButton onClick={() => setShowForm(true)}>Tambah Transaksi Baru</AddButton>`}>
+            <AddButton>Tambah Transaksi Baru</AddButton>
+          </Example>
+        </Section>
+
         <Section id="amount" title="Amount" description="Nominal Rupiah dengan warna & tanda sesuai arah">
           <Example
             code={`<Amount value={50000} type="income" signed />\n<Amount value={75000} type="expense" signed />\n<Amount value={balance} />   // merah kalau negatif`}
@@ -280,11 +348,15 @@ export default function DesignCatalog() {
           </Example>
         </Section>
 
-        <Section id="dialog" title="Dialog" description="Popup modal. Tutup dengan klik di luar atau Escape">
+        <Section
+          id="dialog"
+          title="Dialog"
+          description="Popup modal. Fokus pindah ke dalam popup, Tab berputar di dalamnya (focus trap), Escape/klik luar menutup, lalu fokus kembali ke tombol pembuka"
+        >
           <Example
             code={`<Dialog\n  open={open}\n  onClose={() => setOpen(false)}\n  role="alertdialog"\n  labelledBy="judul"\n  className="max-w-sm"\n>\n  <Card>...</Card>\n</Dialog>`}
           >
-            <Button variant="secondary" className="px-4 py-2" onClick={() => setDialogOpen(true)}>
+            <Button variant="secondary" onClick={() => setDialogOpen(true)}>
               Buka contoh dialog
             </Button>
           </Example>
@@ -301,10 +373,10 @@ export default function DesignCatalog() {
               </h3>
               <p className="text-sm text-parchment-dim mb-6">Ini hanya contoh — tidak ada data yang dihapus.</p>
               <div className="flex justify-end gap-3">
-                <Button variant="secondary" className="px-4 py-2" onClick={() => setDialogOpen(false)}>
+                <Button variant="secondary" onClick={() => setDialogOpen(false)}>
                   Batal
                 </Button>
-                <Button variant="danger" className="px-4 py-2" onClick={() => setDialogOpen(false)}>
+                <Button variant="danger" onClick={() => setDialogOpen(false)}>
                   Hapus
                 </Button>
               </div>

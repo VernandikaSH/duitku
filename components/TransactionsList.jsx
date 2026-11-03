@@ -184,7 +184,7 @@ export default function TransactionsList({ initialTransactions }) {
             <Button
               onClick={resetFilters}
               variant="secondary"
-              className="w-full h-10 px-3"
+              className="w-full"
             >
               Reset Filter
             </Button>
@@ -285,7 +285,6 @@ export default function TransactionsList({ initialTransactions }) {
                 onClick={() => setPendingDelete(null)}
                 disabled={deleting}
                 variant="secondary"
-                className="px-4 py-2"
               >
                 Batal
               </Button>
@@ -293,7 +292,6 @@ export default function TransactionsList({ initialTransactions }) {
                 onClick={confirmDelete}
                 disabled={deleting}
                 variant="danger"
-                className="px-4 py-2"
               >
                 {deleting ? 'Menghapus...' : 'Hapus'}
               </Button>
