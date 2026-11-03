@@ -246,6 +246,7 @@ export default function TransactionsList({ initialTransactions }) {
           <TransactionForm
             key={editingTransaction.id}
             editData={editingTransaction}
+            autoFocusAmount
             onCancel={() => setEditingId(null)}
             onSuccess={(updated) => {
               setTransactions((prev) => prev.map((t) => (t.id === updated.id ? updated : t)))

@@ -30,7 +30,10 @@ export async function middleware(request) {
   const isAuthPage = request.nextUrl.pathname.startsWith('/login') ||
                       request.nextUrl.pathname.startsWith('/register')
 
-  if (!user && !isAuthPage && request.nextUrl.pathname !== '/') {
+  // Katalog design system boleh dibuka tanpa login (hanya berisi data dummy)
+  const isPublicPage = request.nextUrl.pathname.startsWith('/design')
+
+  if (!user && !isAuthPage && !isPublicPage && request.nextUrl.pathname !== '/') {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 

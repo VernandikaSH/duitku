@@ -42,6 +42,16 @@ export default function MoneyInput({ value, onValueChange, ...props }) {
     onValueChange(raw)
   }
 
+  // Saat fokus otomatis (mis. form edit yang sudah berisi angka), taruh kursor di akhir
+  // supaya bisa langsung lanjut mengetik atau menghapus dari belakang
+  useLayoutEffect(() => {
+    if (!props.autoFocus || !ref.current) return
+    const end = ref.current.value.length
+    ref.current.setSelectionRange(end, end)
+    // Hanya sekali saat input pertama kali muncul
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   // Setelah nilai baru dirender (titik mungkin bergeser), kembalikan kursor ke tempatnya
   useLayoutEffect(() => {
     if (pendingCaret.current === null || !ref.current) return
