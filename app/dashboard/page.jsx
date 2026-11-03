@@ -33,14 +33,14 @@ export default async function DashboardPage({ searchParams }) {
     .order('created_at', { ascending: false })
 
   return (
-    <div className="min-h-screen bg-charcoal">
+    <>
       <Navbar active="dashboard" email={user.email} />
 
-      <div className="page-enter">
+      <main className="page-enter">
         <MonthSwitcher year={year} month={month}>
           <DashboardClient transactions={transactions || []} />
         </MonthSwitcher>
-      </div>
-    </div>
+      </main>
+    </>
   )
 }

@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import LogoutButton from './LogoutButton'
 import Logo from '@/components/ui/Logo'
+import { isPlainLeftClick } from '@/lib/navigation'
+import PageContainer from '@/components/ui/PageContainer'
 
 const TABS = [
   { key: 'dashboard', href: '/dashboard', label: 'Dashboard' },
@@ -21,7 +23,7 @@ export default function Navbar({ active, email }) {
   const current = isPending && target ? target : active
 
   function handleClick(e, tab) {
-    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return
+    if (!isPlainLeftClick(e)) return
     e.preventDefault()
     if (tab.key === current) return
     setTarget(tab.key)
@@ -29,9 +31,9 @@ export default function Navbar({ active, email }) {
   }
 
   return (
-    <nav className="bg-panel border-b border-line px-4 sm:px-6 py-4">
+    <nav className="bg-panel border-b border-line py-4">
       {/* Di layar kecil tab turun ke baris kedua agar tidak menabrak tombol Keluar */}
-      <div className="max-w-4xl mx-auto flex flex-wrap items-center gap-x-8 gap-y-3">
+      <PageContainer className="flex flex-wrap items-center gap-x-8 gap-y-3">
         <Logo as="h1" className="order-1 shrink-0" />
 
         <div className="order-3 sm:order-2 w-full sm:w-auto flex items-center gap-6 text-sm whitespace-nowrap overflow-x-auto">
@@ -57,7 +59,7 @@ export default function Navbar({ active, email }) {
           </span>
           <LogoutButton />
         </div>
-      </div>
+      </PageContainer>
     </nav>
   )
 }

@@ -7,6 +7,7 @@ import EmptyState from '@/components/ui/EmptyState'
 import Amount from '@/components/ui/Amount'
 import { formatRupiah, formatSigned } from '@/lib/format'
 import { chart } from '@/lib/tokens'
+import { MONTH_NAMES as MONTH_LONG, MONTH_SHORT } from '@/lib/date'
 
 // Warna mark grafik dari lib/tokens.js (lihat penjelasan warna `in` di sana)
 const COLOR_IN = chart.in
@@ -15,12 +16,6 @@ const COLOR_BALANCE = chart.balance
 const COLOR_GRID = chart.grid
 const COLOR_SURFACE = chart.surface
 const COLOR_AXIS_TEXT = chart.axisText
-
-const MONTH_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
-const MONTH_LONG = [
-  'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-  'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
-]
 
 const M = { top: 12, right: 16, bottom: 36, left: 56 }
 

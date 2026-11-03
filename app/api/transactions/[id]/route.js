@@ -1,21 +1,21 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase-server'
+import { requireUser, validateTransaction } from '@/lib/api'
 
 // PUT /api/transactions/[id] — update transaksi
 export async function PUT(request, { params }) {
-  const supabase = createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { supabase, user, response } = await requireUser()
+  if (response) return response
 
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  // Aturan validasi sama persis dengan POST (tambah)
+  const body = await request.json().catch(() => null)
+  const { error: invalid, value } = validateTransaction(body)
+  if (invalid) {
+    return NextResponse.json({ error: invalid }, { status: 400 })
   }
-
-  const body = await request.json()
-  const { amount, type, category, note, date } = body
 
   const { data, error } = await supabase
     .from('transactions')
-    .update({ amount: Number(amount), type, category, note: note || null, date })
+    .update(value)
     .eq('id', params.id)
     .eq('user_id', user.id) // pastikan hanya bisa update milik sendiri
     .select()
@@ -30,12 +30,8 @@ export async function PUT(request, { params }) {
 
 // DELETE /api/transactions/[id] — hapus transaksi
 export async function DELETE(request, { params }) {
-  const supabase = createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const { supabase, user, response } = await requireUser()
+  if (response) return response
 
   const { error } = await supabase
     .from('transactions')

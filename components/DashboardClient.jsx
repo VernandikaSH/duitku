@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import TextLink from '@/components/ui/TextLink'
 import TransactionForm from './TransactionForm'
+import TransactionRow from './TransactionRow'
+import PageContainer from '@/components/ui/PageContainer'
 import Card from '@/components/ui/Card'
 import SectionHeader from '@/components/ui/SectionHeader'
 import EmptyState from '@/components/ui/EmptyState'
@@ -74,7 +76,7 @@ export default function DashboardClient({ transactions }) {
   const incomeChartData = Object.entries(incomeByCategory).map(([name, value]) => ({ name, value }))
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-10 space-y-6">
+    <PageContainer className="py-6 sm:py-10 space-y-6">
       {/* Saldo */}
       <Card padding="lg">
         <p className="text-sm text-parchment-dim mb-2">Saldo bulan ini</p>
@@ -135,27 +137,13 @@ export default function DashboardClient({ transactions }) {
         {transactions.length === 0 ? (
           <EmptyState>Belum ada transaksi.</EmptyState>
         ) : (
-          <ul>
-            {transactions.slice(0, 5).map((t, i) => (
-              <li
-                key={t.id}
-                className={`flex justify-between items-center py-3 ${
-                  i < transactions.slice(0, 5).length - 1 ? 'border-b border-line' : ''
-                }`}
-              >
-                <div>
-                  <p className="text-sm text-parchment">{t.category}</p>
-                  <p className="text-xs text-parchment-dim">
-                    {new Date(t.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
-                    {t.note ? ` · ${t.note}` : ''}
-                  </p>
-                </div>
-                <Amount value={t.amount} type={t.type} signed className="text-sm" />
-              </li>
+          <ul className="divide-y divide-line">
+            {transactions.slice(0, 5).map((t) => (
+              <TransactionRow key={t.id} transaction={t} />
             ))}
           </ul>
         )}
       </Card>
-    </div>
+    </PageContainer>
   )
 }

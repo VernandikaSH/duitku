@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase-server'
 import Navbar from '@/components/Navbar'
 import TransactionsList from '@/components/TransactionsList'
 import PageHeader from '@/components/ui/PageHeader'
+import PageContainer from '@/components/ui/PageContainer'
 
 export default async function TransactionsPage() {
   const supabase = createClient()
@@ -20,13 +21,13 @@ export default async function TransactionsPage() {
     .order('created_at', { ascending: false })
 
   return (
-    <div className="min-h-screen bg-charcoal">
+    <>
       <Navbar active="transactions" email={user.email} />
 
-      <main className="page-enter max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+      <PageContainer as="main" className="page-enter py-6 sm:py-10">
         <PageHeader title="Riwayat Transaksi" />
         <TransactionsList initialTransactions={transactions || []} />
-      </main>
-    </div>
+      </PageContainer>
+    </>
   )
 }

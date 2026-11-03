@@ -3,16 +3,13 @@
 import TextLink from '@/components/ui/TextLink'
 import MonthPicker from './MonthPicker'
 import Card from '@/components/ui/Card'
-import { MONTH_NAMES } from '@/lib/date'
-
-function formatMonthParam(year, month) {
-  return `${year}-${String(month).padStart(2, '0')}`
-}
+import { MONTH_NAMES, formatMonthParam } from '@/lib/date'
+import { isPlainLeftClick } from '@/lib/navigation'
 
 // Klik kiri biasa ditangani lewat transisi; klik tengah / Ctrl+klik tetap
 // berperilaku seperti link normal (buka tab baru, dst.)
 function handleClick(e, onNavigate, delta) {
-  if (!onNavigate || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return
+  if (!onNavigate || !isPlainLeftClick(e)) return
   e.preventDefault()
   onNavigate(delta)
 }

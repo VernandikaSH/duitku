@@ -3,9 +3,8 @@
 import { useState } from 'react'
 import TextLink from '@/components/ui/TextLink'
 import { createClient } from '@/lib/supabase-browser'
+import AuthLayout from '@/components/AuthLayout'
 import Button from '@/components/ui/Button'
-import Card from '@/components/ui/Card'
-import Logo from '@/components/ui/Logo'
 import Alert from '@/components/ui/Alert'
 import Input from '@/components/ui/Input'
 
@@ -44,69 +43,61 @@ export default function RegisterPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-charcoal px-4">
-        <Card padding="lg" className="w-full max-w-sm text-center">
-          <h1 className="text-xl font-serif italic text-brass-soft mb-2">Cek email kamu</h1>
-          <p className="text-sm text-parchment-dim">
-            Kami sudah mengirim link konfirmasi ke <strong className="text-parchment">{email}</strong>.
-            Klik link tersebut untuk mengaktifkan akun, lalu kembali ke halaman login.
-          </p>
-          <TextLink href="/login" className="inline-block mt-6 text-sm">
-            Kembali ke Login
-          </TextLink>
-        </Card>
-      </div>
+      <AuthLayout className="text-center">
+        <h1 className="text-xl font-serif italic text-brass-soft mb-2">Cek email kamu</h1>
+        <p className="text-sm text-parchment-dim">
+          Kami sudah mengirim link konfirmasi ke <strong className="text-parchment">{email}</strong>.
+          Klik link tersebut untuk mengaktifkan akun, lalu kembali ke halaman login.
+        </p>
+        <TextLink href="/login" className="inline-block mt-6 text-sm">
+          Kembali ke Login
+        </TextLink>
+      </AuthLayout>
     )
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-charcoal px-4">
-      <Card padding="lg" className="w-full max-w-sm">
-        <div className="text-center mb-8">
-          <Logo as="h1" size="lg" />
-          <p className="text-parchment-dim text-sm mt-2">Buat akun untuk mulai mencatat</p>
-        </div>
-
-        <form onSubmit={handleRegister} className="space-y-4">
-          <Input
-            label="Email"
-            type="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="nama@email.com"
-          />
-
-          <Input
-            label="Password"
-            type="password"
-            required
-            minLength={6}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Minimal 6 karakter"
-          />
-
-          {error && (
-            <Alert>{error}</Alert>
-          )}
-
-          <Button
-            type="submit"
-            disabled={loading}
-            className="w-full py-2.5"
-          >
-            {loading ? 'Memproses...' : 'Daftar'}
-          </Button>
-        </form>
-
-        <p className="text-center text-sm text-parchment-dim mt-6">
+    <AuthLayout
+      tagline="Buat akun untuk mulai mencatat"
+      footer={
+        <>
           Sudah punya akun?{' '}
-          <TextLink href="/login">
-            Masuk di sini
-          </TextLink>
-        </p>
-      </Card>
-    </div>
+          <TextLink href="/login">Masuk di sini</TextLink>
+        </>
+      }
+    >
+      <form onSubmit={handleRegister} className="space-y-4">
+        <Input
+          label="Email"
+          type="email"
+          required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="nama@email.com"
+        />
+
+        <Input
+          label="Password"
+          type="password"
+          required
+          minLength={6}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="Minimal 6 karakter"
+        />
+
+        {error && (
+          <Alert>{error}</Alert>
+        )}
+
+        <Button
+          type="submit"
+          disabled={loading}
+          className="w-full py-2.5"
+        >
+          {loading ? 'Memproses...' : 'Daftar'}
+        </Button>
+      </form>
+    </AuthLayout>
   )
 }

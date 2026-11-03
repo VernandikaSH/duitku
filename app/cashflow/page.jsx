@@ -1,15 +1,12 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase-server'
-import { formatDateLocal } from '@/lib/date'
+import { formatDateLocal, formatMonthParam } from '@/lib/date'
 import Navbar from '@/components/Navbar'
 import CashflowView from '@/components/CashflowView'
 import PageHeader from '@/components/ui/PageHeader'
+import PageContainer from '@/components/ui/PageContainer'
 
 const MONTHS_SHOWN = 12
-
-function monthKey(year, month) {
-  return `${year}-${String(month).padStart(2, '0')}`
-}
 
 function signedAmount(t) {
   return t.type === 'income' ? Number(t.amount) : -Number(t.amount)
@@ -51,7 +48,7 @@ export default async function CashflowPage() {
   for (let i = 0; i < MONTHS_SHOWN; i++) {
     const d = new Date(rangeStart.getFullYear(), rangeStart.getMonth() + i, 1)
     months.push({
-      key: monthKey(d.getFullYear(), d.getMonth() + 1),
+      key: formatMonthParam(d.getFullYear(), d.getMonth() + 1),
       year: d.getFullYear(),
       month: d.getMonth() + 1,
       income: 0,
@@ -75,13 +72,13 @@ export default async function CashflowPage() {
   })
 
   return (
-    <div className="min-h-screen bg-charcoal">
+    <>
       <Navbar active="cashflow" email={user.email} />
 
-      <main className="page-enter max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+      <PageContainer as="main" className="page-enter py-6 sm:py-10">
         <PageHeader title="Cashflow" description="12 bulan terakhir" />
         <CashflowView rows={rows} openingBalance={openingBalance} />
-      </main>
-    </div>
+      </PageContainer>
+    </>
   )
 }

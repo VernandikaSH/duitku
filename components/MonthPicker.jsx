@@ -2,9 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import TextLink from '@/components/ui/TextLink'
-import { MONTH_NAMES } from '@/lib/date'
-
-const SHORT_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
+import { MONTH_NAMES, MONTH_SHORT } from '@/lib/date'
 
 // Judul bulan yang bisa diklik untuk membuka popup pilih bulan (tahun + grid 12 bulan)
 export default function MonthPicker({ year, month, onSelect, children }) {
@@ -103,7 +101,7 @@ export default function MonthPicker({ year, month, onSelect, children }) {
             </div>
 
             <div className="grid grid-cols-3 gap-1">
-              {SHORT_NAMES.map((name, i) => {
+              {MONTH_SHORT.map((name, i) => {
                 const m = i + 1
                 const isSelected = viewYear === year && m === month
                 const isThisMonth = viewYear === thisYear && m === thisMonth

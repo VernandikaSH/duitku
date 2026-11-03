@@ -3,10 +3,8 @@
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import MonthNav from './MonthNav'
-
-function formatMonthParam(year, month) {
-  return `${year}-${String(month).padStart(2, '0')}`
-}
+import PageContainer from '@/components/ui/PageContainer'
+import { formatMonthParam } from '@/lib/date'
 
 export default function MonthSwitcher({ year, month, children }) {
   const router = useRouter()
@@ -44,14 +42,14 @@ export default function MonthSwitcher({ year, month, children }) {
 
   return (
     <>
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8">
+      <PageContainer className="pt-6 sm:pt-8">
         <MonthNav
           year={shown.year}
           month={shown.month}
           onNavigate={navigate}
           onSelect={(year, month) => goTo({ year, month })}
         />
-      </div>
+      </PageContainer>
 
       <div className="pending-fade" data-pending={isPending}>
         {/* key berganti -> subtree remount -> animasi masuk diputar ulang */}
