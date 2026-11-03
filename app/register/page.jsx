@@ -1,8 +1,13 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
+import TextLink from '@/components/ui/TextLink'
 import { createClient } from '@/lib/supabase-browser'
+import Button from '@/components/ui/Button'
+import Card from '@/components/ui/Card'
+import Logo from '@/components/ui/Logo'
+import Alert from '@/components/ui/Alert'
+import Input from '@/components/ui/Input'
 
 export default function RegisterPage() {
   const supabase = createClient()
@@ -40,83 +45,68 @@ export default function RegisterPage() {
   if (success) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-charcoal px-4">
-        <div className="w-full max-w-sm bg-panel border border-brass/15 rounded-lg p-8 text-center">
+        <Card padding="lg" className="w-full max-w-sm text-center">
           <h1 className="text-xl font-serif italic text-brass-soft mb-2">Cek email kamu</h1>
           <p className="text-sm text-parchment-dim">
             Kami sudah mengirim link konfirmasi ke <strong className="text-parchment">{email}</strong>.
             Klik link tersebut untuk mengaktifkan akun, lalu kembali ke halaman login.
           </p>
-          <Link
-            href="/login"
-            className="inline-block mt-6 text-brass-soft hover:underline text-sm"
-          >
+          <TextLink href="/login" className="inline-block mt-6 text-sm">
             Kembali ke Login
-          </Link>
-        </div>
+          </TextLink>
+        </Card>
       </div>
     )
   }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-charcoal px-4">
-      <div className="w-full max-w-sm bg-panel border border-brass/15 rounded-lg p-8">
+      <Card padding="lg" className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-serif italic text-brass-soft">Duitku</h1>
+          <Logo as="h1" size="lg" />
           <p className="text-parchment-dim text-sm mt-2">Buat akun untuk mulai mencatat</p>
         </div>
 
         <form onSubmit={handleRegister} className="space-y-4">
-          <div>
-            <label className="block text-sm text-parchment-dim mb-1">
-              Email
-            </label>
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-md bg-charcoal2 border border-brass/20 px-3 py-2 text-sm text-parchment placeholder:text-parchment-dim/50 focus:outline-none focus:ring-1 focus:ring-brass"
-              placeholder="nama@email.com"
-            />
-          </div>
+          <Input
+            label="Email"
+            type="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="nama@email.com"
+          />
 
-          <div>
-            <label className="block text-sm text-parchment-dim mb-1">
-              Password
-            </label>
-            <input
-              type="password"
-              required
-              minLength={6}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-md bg-charcoal2 border border-brass/20 px-3 py-2 text-sm text-parchment placeholder:text-parchment-dim/50 focus:outline-none focus:ring-1 focus:ring-brass"
-              placeholder="Minimal 6 karakter"
-            />
-          </div>
+          <Input
+            label="Password"
+            type="password"
+            required
+            minLength={6}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Minimal 6 karakter"
+          />
 
           {error && (
-            <p className="text-sm text-loss bg-loss/10 border border-loss/20 rounded-md px-3 py-2">
-              {error}
-            </p>
+            <Alert>{error}</Alert>
           )}
 
-          <button
+          <Button
             type="submit"
             disabled={loading}
-            className="w-full bg-brass hover:bg-brass-soft text-charcoal font-medium rounded-md py-2.5 text-sm transition-colors disabled:opacity-60"
+            className="w-full py-2.5"
           >
             {loading ? 'Memproses...' : 'Daftar'}
-          </button>
+          </Button>
         </form>
 
         <p className="text-center text-sm text-parchment-dim mt-6">
           Sudah punya akun?{' '}
-          <Link href="/login" className="text-brass-soft hover:underline">
+          <TextLink href="/login">
             Masuk di sini
-          </Link>
+          </TextLink>
         </p>
-      </div>
+      </Card>
     </div>
   )
 }

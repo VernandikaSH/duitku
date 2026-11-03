@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import LogoutButton from './LogoutButton'
+import Logo from '@/components/ui/Logo'
 
 const TABS = [
   { key: 'dashboard', href: '/dashboard', label: 'Dashboard' },
@@ -28,10 +29,10 @@ export default function Navbar({ active, email }) {
   }
 
   return (
-    <nav className="bg-panel border-b border-brass/15 px-4 sm:px-6 py-4">
+    <nav className="bg-panel border-b border-line px-4 sm:px-6 py-4">
       {/* Di layar kecil tab turun ke baris kedua agar tidak menabrak tombol Keluar */}
       <div className="max-w-4xl mx-auto flex flex-wrap items-center gap-x-8 gap-y-3">
-        <h1 className="order-1 text-lg font-serif italic text-brass-soft shrink-0">Duitku</h1>
+        <Logo as="h1" className="order-1 shrink-0" />
 
         <div className="order-3 sm:order-2 w-full sm:w-auto flex items-center gap-6 text-sm whitespace-nowrap overflow-x-auto">
           {TABS.map((tab) => (

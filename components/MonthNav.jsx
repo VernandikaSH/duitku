@@ -1,11 +1,9 @@
 'use client'
 
-import Link from 'next/link'
-
-const MONTH_NAMES = [
-  'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-  'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
-]
+import TextLink from '@/components/ui/TextLink'
+import MonthPicker from './MonthPicker'
+import Card from '@/components/ui/Card'
+import { MONTH_NAMES } from '@/lib/date'
 
 function formatMonthParam(year, month) {
   return `${year}-${String(month).padStart(2, '0')}`
@@ -19,7 +17,7 @@ function handleClick(e, onNavigate, delta) {
   onNavigate(delta)
 }
 
-export default function MonthNav({ year, month, onNavigate }) {
+export default function MonthNav({ year, month, onNavigate, onSelect }) {
   // Hitung bulan sebelumnya & berikutnya (menangani pergantian tahun)
   const prevDate = new Date(year, month - 2, 1) // month - 1 (0-index) - 1 (mundur)
   const nextDate = new Date(year, month, 1)     // month (0-index) sudah maju satu
@@ -31,18 +29,25 @@ export default function MonthNav({ year, month, onNavigate }) {
   const isCurrentMonth = year === now.getFullYear() && month === now.getMonth() + 1
 
   return (
-    <div className="flex items-center justify-between bg-panel border border-brass/15 rounded-lg px-3 sm:px-5 py-3 gap-2">
-      <Link
+    <Card padding="none" className="flex items-center justify-between px-3 sm:px-5 py-3 gap-2">
+      <TextLink
         href={`/dashboard?month=${prevParam}`}
         onClick={(e) => handleClick(e, onNavigate, -1)}
-        className="text-xs sm:text-sm text-parchment-dim hover:text-brass-soft transition-colors px-1.5 sm:px-2 py-1 whitespace-nowrap"
+        variant="muted"
+        className="text-xs sm:text-sm px-1.5 sm:px-2 py-1 whitespace-nowrap"
       >
         <span className="sm:hidden">‹ Lalu</span>
         <span className="hidden sm:inline">← Bulan Lalu</span>
-      </Link>
+      </TextLink>
 
       <span className="text-sm font-serif italic text-parchment text-center">
-        {MONTH_NAMES[month - 1]} {year}
+        {onSelect ? (
+          <MonthPicker year={year} month={month} onSelect={onSelect}>
+            {MONTH_NAMES[month - 1]} {year}
+          </MonthPicker>
+        ) : (
+          <>{MONTH_NAMES[month - 1]} {year}</>
+        )}
         {isCurrentMonth && (
           <span className="block sm:inline sm:ml-2 text-xs font-sans not-italic text-brass-soft border border-brass/30 px-2 py-0.5 rounded-full mt-1 sm:mt-0">
             Bulan Ini
@@ -50,14 +55,15 @@ export default function MonthNav({ year, month, onNavigate }) {
         )}
       </span>
 
-      <Link
+      <TextLink
         href={`/dashboard?month=${nextParam}`}
         onClick={(e) => handleClick(e, onNavigate, 1)}
-        className="text-xs sm:text-sm text-parchment-dim hover:text-brass-soft transition-colors px-1.5 sm:px-2 py-1 whitespace-nowrap"
+        variant="muted"
+        className="text-xs sm:text-sm px-1.5 sm:px-2 py-1 whitespace-nowrap"
       >
         <span className="sm:hidden">Depan ›</span>
         <span className="hidden sm:inline">Bulan Depan →</span>
-      </Link>
-    </div>
+      </TextLink>
+    </Card>
   )
 }

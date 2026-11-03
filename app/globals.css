@@ -3,8 +3,8 @@
 @tailwind utilities;
 
 ::selection {
-  background-color: #c9a227;
-  color: #14171a;
+  background-color: theme('colors.brass.DEFAULT');
+  color: theme('colors.charcoal');
 }
 
 * {
@@ -12,7 +12,7 @@
 }
 
 :focus-visible {
-  outline: 2px solid #c9a227;
+  outline: 2px solid theme('colors.brass.DEFAULT');
   outline-offset: 2px;
 }
 
@@ -45,6 +45,16 @@
   from { opacity: 0; transform: translateX(-12px); }
 }
 
+/* Popup pilih bulan: muncul dari arah judul bulan */
+.picker-enter {
+  transform-origin: top center;
+  animation: picker-in 150ms var(--ease-out) both;
+}
+
+@keyframes picker-in {
+  from { opacity: 0; transform: translateY(-4px) scale(0.97); }
+}
+
 /* Selagi data baru dimuat (ganti bulan, ganti filter), konten lama meredup. Delay kecil supaya
    respons cepat tidak menimbulkan kedipan. */
 .pending-fade {
@@ -58,7 +68,8 @@
 @media (prefers-reduced-motion: reduce) {
   .page-enter,
   .month-enter-next,
-  .month-enter-prev {
+  .month-enter-prev,
+  .picker-enter {
     animation-name: fade-in;
   }
 }

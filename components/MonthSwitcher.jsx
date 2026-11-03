@@ -26,14 +26,17 @@ export default function MonthSwitcher({ year, month, children }) {
   // Selama data bulan baru dimuat, label langsung menampilkan bulan tujuan
   const shown = isPending && target ? target : { year, month }
 
-  function navigate(delta) {
-    const d = new Date(shown.year, shown.month - 1 + delta, 1)
-    const next = { year: d.getFullYear(), month: d.getMonth() + 1 }
-
+  function goTo(next) {
     setTarget(next)
     startTransition(() => {
       router.push(`/dashboard?month=${formatMonthParam(next.year, next.month)}`, { scroll: false })
     })
+  }
+
+  // Tombol Bulan Lalu / Bulan Depan
+  function navigate(delta) {
+    const d = new Date(shown.year, shown.month - 1 + delta, 1)
+    goTo({ year: d.getFullYear(), month: d.getMonth() + 1 })
   }
 
   const enterClass =
@@ -42,7 +45,12 @@ export default function MonthSwitcher({ year, month, children }) {
   return (
     <>
       <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8">
-        <MonthNav year={shown.year} month={shown.month} onNavigate={navigate} />
+        <MonthNav
+          year={shown.year}
+          month={shown.month}
+          onNavigate={navigate}
+          onSelect={(year, month) => goTo({ year, month })}
+        />
       </div>
 
       <div className="pending-fade" data-pending={isPending}>

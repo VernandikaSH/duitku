@@ -1,16 +1,20 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import Card from '@/components/ui/Card'
+import SectionHeader from '@/components/ui/SectionHeader'
+import EmptyState from '@/components/ui/EmptyState'
+import Amount from '@/components/ui/Amount'
+import { formatRupiah, formatSigned } from '@/lib/format'
+import { chart } from '@/lib/tokens'
 
-// Warna mark grafik. Brass sengaja satu langkah lebih gelap dari `brass`
-// tema supaya lolos validator palet (lightness band + beda warna untuk
-// buta warna) terhadap `loss` di atas panel gelap.
-const COLOR_IN = '#b5901e'
-const COLOR_OUT = '#c1543f'
-const COLOR_BALANCE = '#cfc9bb'
-const COLOR_GRID = '#2a3a31'
-const COLOR_SURFACE = '#16241d'
-const COLOR_AXIS_TEXT = '#9c978a'
+// Warna mark grafik dari lib/tokens.js (lihat penjelasan warna `in` di sana)
+const COLOR_IN = chart.in
+const COLOR_OUT = chart.out
+const COLOR_BALANCE = chart.balance
+const COLOR_GRID = chart.grid
+const COLOR_SURFACE = chart.surface
+const COLOR_AXIS_TEXT = chart.axisText
 
 const MONTH_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
 const MONTH_LONG = [
@@ -20,16 +24,7 @@ const MONTH_LONG = [
 
 const M = { top: 12, right: 16, bottom: 36, left: 56 }
 
-const rupiahFmt = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 })
 const compactFmt = new Intl.NumberFormat('id-ID', { notation: 'compact', maximumFractionDigits: 1 })
-
-function formatRupiah(num) {
-  return rupiahFmt.format(num)
-}
-
-function formatSigned(num) {
-  return `${num > 0 ? '+' : num < 0 ? '-' : ''}${formatRupiah(Math.abs(num))}`
-}
 
 // ---------- Skala ----------
 
@@ -174,7 +169,7 @@ function Tooltip({ row, x, width, items }) {
   const left = Math.min(Math.max(x - TIP_W / 2, 0), width - TIP_W)
   return (
     <div
-      className="pointer-events-none absolute top-0 z-10 rounded-md border border-brass/20 bg-charcoal px-3 py-2 shadow-lg"
+      className="pointer-events-none absolute top-0 z-10 rounded-md border border-line bg-charcoal px-3 py-2 shadow-lg"
       style={{ left, width: TIP_W }}
     >
       <p className="text-xs text-parchment-dim mb-1.5">
@@ -210,13 +205,12 @@ function Legend({ items }) {
   )
 }
 
-function Card({ title, subtitle, children }) {
+function ChartCard({ title, subtitle, children }) {
   return (
-    <section className="bg-panel border border-brass/15 rounded-lg p-4 sm:p-6">
-      <h3 className="text-sm text-parchment">{title}</h3>
-      {subtitle && <p className="text-xs text-parchment-dim mt-0.5">{subtitle}</p>}
+    <Card as="section">
+      <SectionHeader title={title} subtitle={subtitle} />
       <div className="mt-4">{children}</div>
-    </section>
+    </Card>
   )
 }
 
@@ -235,7 +229,7 @@ function InOutChart({ rows }) {
   ]
 
   return (
-    <Card title="Pemasukan vs pengeluaran" subtitle="Per bulan, dalam Rupiah">
+    <ChartCard title="Pemasukan vs pengeluaran" subtitle="Per bulan, dalam Rupiah">
       <Legend items={[{ label: 'Pemasukan', color: COLOR_IN }, { label: 'Pengeluaran', color: COLOR_OUT }]} />
       <ChartFrame
         rows={rows}
@@ -253,7 +247,7 @@ function InOutChart({ rows }) {
           ))
         }}
       />
-    </Card>
+    </ChartCard>
   )
 }
 
@@ -265,7 +259,7 @@ function NetChart({ rows }) {
   ]
 
   return (
-    <Card title="Net per bulan" subtitle="Pemasukan dikurangi pengeluaran">
+    <ChartCard title="Net per bulan" subtitle="Pemasukan dikurangi pengeluaran">
       <Legend items={[{ label: 'Surplus', color: COLOR_IN }, { label: 'Defisit', color: COLOR_OUT }]} />
       <ChartFrame
         rows={rows}
@@ -289,7 +283,7 @@ function NetChart({ rows }) {
           <line x1={M.left} x2={width - M.right} y1={y(0)} y2={y(0)} stroke={COLOR_AXIS_TEXT} strokeOpacity={0.5} strokeWidth={1} />
         )}
       />
-    </Card>
+    </ChartCard>
   )
 }
 
@@ -300,7 +294,7 @@ function BalanceChart({ rows, openingBalance }) {
   const last = rows[rows.length - 1]
 
   return (
-    <Card
+    <ChartCard
       title="Saldo kumulatif"
       subtitle={`Saldo di akhir tiap bulan · saldo awal ${formatSigned(openingBalance)}`}
     >
@@ -318,7 +312,7 @@ function BalanceChart({ rows, openingBalance }) {
             <g>
               <path d={d} fill="none" stroke={COLOR_BALANCE} strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
               <circle cx={lx} cy={ly} r={4} fill={COLOR_BALANCE} stroke={COLOR_SURFACE} strokeWidth={2} />
-              <text x={lx} y={ly - 12} textAnchor="end" fontSize={11} fill="#ede8de">
+              <text x={lx} y={ly - 12} textAnchor="end" fontSize={11} fill={chart.label}>
                 {compactFmt.format(last.balance)}
               </text>
             </g>
@@ -333,7 +327,7 @@ function BalanceChart({ rows, openingBalance }) {
           )
         }
       />
-    </Card>
+    </ChartCard>
   )
 }
 
@@ -342,12 +336,12 @@ function BalanceChart({ rows, openingBalance }) {
 function StatTile({ label, value, tone }) {
   const color = tone === 'in' ? 'text-brass-soft' : tone === 'out' ? 'text-loss' : 'text-parchment'
   return (
-    <div className="bg-panel border border-brass/15 rounded-lg p-4">
+    <Card padding="sm">
       <p className="text-xs text-parchment-dim mb-1">{label}</p>
       <p className={`text-lg sm:text-xl font-semibold ${color}`} style={{ fontVariantNumeric: 'proportional-nums' }}>
         {value}
       </p>
-    </div>
+    </Card>
   )
 }
 
@@ -355,11 +349,11 @@ function SummaryTable({ rows }) {
   const newestFirst = rows.map((r, i) => ({ ...r, prevNet: i > 0 ? rows[i - 1].net : null })).reverse()
 
   return (
-    <Card title="Ringkasan per bulan" subtitle="Bulan terbaru di atas">
+    <ChartCard title="Ringkasan per bulan" subtitle="Bulan terbaru di atas">
       <div className="-mx-4 sm:mx-0 overflow-x-auto">
         <table className="w-full min-w-[560px] text-sm">
           <thead>
-            <tr className="text-xs text-parchment-dim border-b border-brass/15">
+            <tr className="text-xs text-parchment-dim border-b border-line">
               <th className="text-left font-normal py-2 pl-4 sm:pl-0">Bulan</th>
               <th className="text-right font-normal py-2">Masuk</th>
               <th className="text-right font-normal py-2">Keluar</th>
@@ -372,14 +366,14 @@ function SummaryTable({ rows }) {
             {newestFirst.map((r) => {
               const delta = r.prevNet === null ? null : r.net - r.prevNet
               return (
-                <tr key={r.key} className="border-b border-brass/10 last:border-0">
+                <tr key={r.key} className="border-b border-line last:border-0">
                   <td className="py-2.5 pl-4 sm:pl-0 text-parchment whitespace-nowrap">
                     {MONTH_SHORT[r.month - 1]} {r.year}
                   </td>
                   <td className="py-2.5 text-right text-parchment-dim">{formatRupiah(r.income)}</td>
                   <td className="py-2.5 text-right text-parchment-dim">{formatRupiah(r.expense)}</td>
-                  <td className={`py-2.5 text-right ${r.net >= 0 ? 'text-brass-soft' : 'text-loss'}`}>
-                    {formatSigned(r.net)}
+                  <td className="py-2.5 text-right">
+                    <Amount value={r.net} signed />
                   </td>
                   <td className="py-2.5 text-right text-parchment-dim">{delta === null ? '—' : formatSigned(delta)}</td>
                   <td className="py-2.5 pr-4 sm:pr-0 text-right text-parchment">{formatSigned(r.balance)}</td>
@@ -389,7 +383,7 @@ function SummaryTable({ rows }) {
           </tbody>
         </table>
       </div>
-    </Card>
+    </ChartCard>
   )
 }
 
@@ -401,9 +395,9 @@ export default function CashflowView({ rows, openingBalance }) {
 
   if (!hasData) {
     return (
-      <div className="bg-panel border border-brass/15 rounded-lg p-8 text-center">
-        <p className="text-sm text-parchment-dim">Belum ada transaksi dalam 12 bulan terakhir.</p>
-      </div>
+      <Card>
+        <EmptyState>Belum ada transaksi dalam 12 bulan terakhir.</EmptyState>
+      </Card>
     )
   }
 

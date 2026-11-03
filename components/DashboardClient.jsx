@@ -1,22 +1,23 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
+import TextLink from '@/components/ui/TextLink'
 import TransactionForm from './TransactionForm'
-
-function formatRupiah(num) {
-  return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(num)
-}
+import Card from '@/components/ui/Card'
+import SectionHeader from '@/components/ui/SectionHeader'
+import EmptyState from '@/components/ui/EmptyState'
+import Amount from '@/components/ui/Amount'
+import { formatRupiah } from '@/lib/format'
 
 function CategoryBreakdown({ title, data, emptyText, barColor }) {
   const total = data.reduce((sum, d) => sum + d.value, 0)
   const sorted = [...data].sort((a, b) => b.value - a.value)
 
   return (
-    <div className="bg-panel border border-brass/15 rounded-lg p-6">
-      <h3 className="text-sm text-parchment-dim mb-4">{title}</h3>
+    <Card>
+      <SectionHeader title={title} className="mb-4" />
       {sorted.length === 0 ? (
-        <p className="text-sm text-parchment-dim/60 text-center py-12">{emptyText}</p>
+        <EmptyState>{emptyText}</EmptyState>
       ) : (
         <ul className="space-y-3">
           {sorted.map((d) => (
@@ -35,7 +36,7 @@ function CategoryBreakdown({ title, data, emptyText, barColor }) {
           ))}
         </ul>
       )}
-    </div>
+    </Card>
   )
 }
 
@@ -75,22 +76,20 @@ export default function DashboardClient({ transactions }) {
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-10 space-y-6">
       {/* Saldo */}
-      <div className="bg-panel border border-brass/15 rounded-lg p-8">
+      <Card padding="lg">
         <p className="text-sm text-parchment-dim mb-2">Saldo bulan ini</p>
-        <p className={`text-4xl sm:text-5xl font-serif ${balance >= 0 ? 'text-brass-soft' : 'text-loss'}`}>
-          {formatRupiah(balance)}
-        </p>
-        <div className="flex gap-8 mt-6 pt-6 border-t border-brass/15">
+        <Amount as="p" value={balance} className="text-4xl sm:text-5xl font-serif" />
+        <div className="flex gap-8 mt-6 pt-6 border-t border-line">
           <div>
             <p className="text-xs text-parchment-dim mb-1">Pemasukan</p>
-            <p className="text-lg text-brass-soft">{formatRupiah(totalIncome)}</p>
+            <Amount as="p" value={totalIncome} type="income" className="text-lg" />
           </div>
           <div>
             <p className="text-xs text-parchment-dim mb-1">Pengeluaran</p>
-            <p className="text-lg text-loss">{formatRupiah(totalExpense)}</p>
+            <Amount as="p" value={totalExpense} type="expense" className="text-lg" />
           </div>
         </div>
-      </div>
+      </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <CategoryBreakdown
@@ -123,22 +122,25 @@ export default function DashboardClient({ transactions }) {
       </div>
 
       {/* Transaksi terbaru */}
-      <div className="bg-panel border border-brass/15 rounded-lg p-6">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-sm text-parchment-dim">Transaksi terbaru</h3>
-          <Link href="/transactions" className="text-sm text-brass-soft hover:underline">
-            Lihat semua
-          </Link>
-        </div>
+      <Card>
+        <SectionHeader
+          title="Transaksi terbaru"
+          action={
+            <TextLink href="/transactions" className="text-sm">
+              Lihat semua
+            </TextLink>
+          }
+          className="mb-4"
+        />
         {transactions.length === 0 ? (
-          <p className="text-sm text-parchment-dim/60 text-center py-8">Belum ada transaksi.</p>
+          <EmptyState>Belum ada transaksi.</EmptyState>
         ) : (
           <ul>
             {transactions.slice(0, 5).map((t, i) => (
               <li
                 key={t.id}
                 className={`flex justify-between items-center py-3 ${
-                  i < transactions.slice(0, 5).length - 1 ? 'border-b border-brass/10' : ''
+                  i < transactions.slice(0, 5).length - 1 ? 'border-b border-line' : ''
                 }`}
               >
                 <div>
@@ -148,14 +150,12 @@ export default function DashboardClient({ transactions }) {
                     {t.note ? ` · ${t.note}` : ''}
                   </p>
                 </div>
-                <span className={`text-sm ${t.type === 'income' ? 'text-brass-soft' : 'text-loss'}`}>
-                  {t.type === 'income' ? '+' : '-'}{formatRupiah(t.amount)}
-                </span>
+                <Amount value={t.amount} type={t.type} signed className="text-sm" />
               </li>
             ))}
           </ul>
         )}
-      </div>
+      </Card>
     </div>
   )
 }

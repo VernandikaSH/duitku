@@ -4,16 +4,20 @@ import { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import TransactionForm from './TransactionForm'
 import { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from '@/lib/categories'
+import Button from '@/components/ui/Button'
+import TextLink from '@/components/ui/TextLink'
+import Input from '@/components/ui/Input'
+import Select from '@/components/ui/Select'
+import Card from '@/components/ui/Card'
+import EmptyState from '@/components/ui/EmptyState'
+import Alert from '@/components/ui/Alert'
+import Amount from '@/components/ui/Amount'
 
 const ALL_CATEGORIES = [...INCOME_CATEGORIES, ...EXPENSE_CATEGORIES].filter(
   (cat, index, arr) => arr.indexOf(cat) === index // hilangkan duplikat (misal "Lainnya")
 )
 
 const PAGE_SIZE = 25
-
-function formatRupiah(num) {
-  return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(num)
-}
 
 export default function TransactionsList({ initialTransactions }) {
   const [transactions, setTransactions] = useState(initialTransactions)
@@ -137,28 +141,30 @@ export default function TransactionsList({ initialTransactions }) {
   function renderPagination(spacingClass) {
     if (transactions.length === 0 || totalPages <= 1) return null
     return (
-      <div className={`flex items-center justify-between border-brass/10 ${spacingClass}`}>
+      <div className={`flex items-center justify-between border-line ${spacingClass}`}>
         <span className="text-xs text-parchment-dim">
           {pageStart + 1}–{Math.min(pageStart + PAGE_SIZE, transactions.length)} dari {transactions.length} transaksi
         </span>
         <div className="flex items-center gap-3">
-          <button
+          <TextLink
             onClick={() => goToPage(Math.max(1, page - 1), 'end')}
             disabled={page === 1}
-            className="text-xs text-parchment-dim hover:text-brass-soft disabled:opacity-30 disabled:hover:text-parchment-dim transition-colors"
+            variant="muted"
+            className="text-xs"
           >
             Sebelumnya
-          </button>
+          </TextLink>
           <span className="text-xs text-parchment-dim">
             {page} / {totalPages}
           </span>
-          <button
+          <TextLink
             onClick={() => goToPage(Math.min(totalPages, page + 1), 'start')}
             disabled={page === totalPages}
-            className="text-xs text-parchment-dim hover:text-brass-soft disabled:opacity-30 disabled:hover:text-parchment-dim transition-colors"
+            variant="muted"
+            className="text-xs"
           >
             Berikutnya
-          </button>
+          </TextLink>
         </div>
       </div>
     )
@@ -167,69 +173,62 @@ export default function TransactionsList({ initialTransactions }) {
   return (
     <div className="space-y-6">
       {/* Filter */}
-      <div className="bg-panel border border-brass/15 rounded-lg p-4 sm:p-5">
+      <Card>
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+          <Input
+            label="Dari Tanggal"
+            type="date"
+            value={from}
+            onChange={(e) => setFrom(e.target.value)}
+          />
+          <Input
+            label="Sampai Tanggal"
+            type="date"
+            value={to}
+            onChange={(e) => setTo(e.target.value)}
+          />
+          <Select
+            label="Kategori"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+          >
+            <option value="">Semua Kategori</option>
+            {ALL_CATEGORIES.map((cat) => (
+              <option key={cat} value={cat}>{cat}</option>
+            ))}
+          </Select>
           <div>
-            <label className="block text-xs text-parchment-dim mb-1">Dari Tanggal</label>
-            <input
-              type="date"
-              value={from}
-              onChange={(e) => setFrom(e.target.value)}
-              className="w-full rounded-md bg-charcoal2 border border-brass/20 px-3 py-2 text-sm text-parchment focus:outline-none focus:ring-1 focus:ring-brass"
-            />
-          </div>
-          <div>
-            <label className="block text-xs text-parchment-dim mb-1">Sampai Tanggal</label>
-            <input
-              type="date"
-              value={to}
-              onChange={(e) => setTo(e.target.value)}
-              className="w-full rounded-md bg-charcoal2 border border-brass/20 px-3 py-2 text-sm text-parchment focus:outline-none focus:ring-1 focus:ring-brass"
-            />
-          </div>
-          <div>
-            <label className="block text-xs text-parchment-dim mb-1">Kategori</label>
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="w-full rounded-md bg-charcoal2 border border-brass/20 px-3 py-2 text-sm text-parchment focus:outline-none focus:ring-1 focus:ring-brass"
-            >
-              <option value="">Semua Kategori</option>
-              {ALL_CATEGORIES.map((cat) => (
-                <option key={cat} value={cat}>{cat}</option>
-              ))}
-            </select>
-          </div>
-          <div className="flex items-end">
-            <button
+            <span className="hidden sm:block text-sm mb-1 invisible" aria-hidden="true">Reset</span>
+            <Button
               onClick={resetFilters}
-              className="w-full rounded-md border border-brass/20 px-3 py-2 text-sm text-parchment-dim hover:text-parchment hover:border-brass/40 transition-colors"
+              variant="secondary"
+              className="w-full h-10 px-3"
             >
               Reset Filter
-            </button>
+            </Button>
           </div>
         </div>
-      </div>
+      </Card>
 
       {/* Daftar transaksi */}
       {/* Saat filter dimuat, daftar lama tetap tampil tapi meredup */}
-      <div
+      <Card
         ref={listRef}
-        className="pending-fade bg-panel border border-brass/15 rounded-lg p-6 scroll-my-4"
+        className="pending-fade scroll-my-4"
         data-pending={loading}
         aria-busy={loading}
       >
         {renderPagination('mb-4 pb-4 border-b')}
 
         {transactions.length === 0 ? (
-          <p className="text-sm text-parchment-dim text-center py-8">Tidak ada transaksi yang cocok dengan filter.</p>
+          <EmptyState>Tidak ada transaksi yang cocok dengan filter.</EmptyState>
         ) : (
           <ul>
             {visibleTransactions.map((t, i) => (
               <li
                 key={t.id}
                 className={`flex flex-col sm:flex-row sm:justify-between sm:items-center py-3 gap-2 ${
-                  i < visibleTransactions.length - 1 ? 'border-b border-brass/10' : ''
+                  i < visibleTransactions.length - 1 ? 'border-b border-line' : ''
                 }`}
               >
                 <div className="min-w-0">
@@ -240,24 +239,23 @@ export default function TransactionsList({ initialTransactions }) {
                   </p>
                 </div>
                 <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0">
-                  <span className={`text-sm ${t.type === 'income' ? 'text-brass-soft' : 'text-loss'}`}>
-                    {t.type === 'income' ? '+' : '-'}{formatRupiah(t.amount)}
-                  </span>
-                  <button
+                  <Amount value={t.amount} type={t.type} signed className="text-sm" />
+                  <TextLink
                     onClick={() => setEditingId(t.id)}
-                    className="text-xs text-brass-soft hover:underline"
+                    className="text-xs"
                   >
                     Edit
-                  </button>
-                  <button
+                  </TextLink>
+                  <TextLink
                     onClick={() => {
                       setDeleteError('')
                       setPendingDelete(t)
                     }}
-                    className="text-xs text-loss hover:underline"
+                    variant="danger"
+                    className="text-xs"
                   >
                     Hapus
-                  </button>
+                  </TextLink>
                 </div>
               </li>
             ))}
@@ -265,7 +263,7 @@ export default function TransactionsList({ initialTransactions }) {
         )}
 
         {renderPagination('mt-4 pt-4 border-t')}
-      </div>
+      </Card>
 
       {/* Popup dirender ke body lewat portal: wrapper halaman (.page-enter) punya animasi transform,
           yang membuat position: fixed di dalamnya relatif ke halaman, bukan ke layar */}
@@ -302,11 +300,11 @@ export default function TransactionsList({ initialTransactions }) {
           className="fixed inset-0 z-50 flex items-center justify-center bg-charcoal/70 backdrop-blur-sm px-4"
           onClick={() => !deleting && setPendingDelete(null)}
         >
-          <div
+          <Card
             role="alertdialog"
             aria-modal="true"
             aria-labelledby="delete-dialog-title"
-            className="w-full max-w-sm bg-panel border border-brass/20 rounded-lg p-6"
+            className="w-full max-w-sm"
             onClick={(e) => e.stopPropagation()}
           >
             <h3 id="delete-dialog-title" className="text-sm text-parchment mb-1">
@@ -314,36 +312,34 @@ export default function TransactionsList({ initialTransactions }) {
             </h3>
             <p className="text-sm text-parchment-dim mb-6">
               {pendingDelete.category} ·{' '}
-              <span className={pendingDelete.type === 'income' ? 'text-brass-soft' : 'text-loss'}>
-                {pendingDelete.type === 'income' ? '+' : '-'}{formatRupiah(pendingDelete.amount)}
-              </span>{' '}
+              <Amount value={pendingDelete.amount} type={pendingDelete.type} signed />{' '}
               pada {new Date(pendingDelete.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}.
               Tindakan ini tidak bisa dibatalkan.
             </p>
 
             {deleteError && (
-              <p className="text-sm text-loss bg-loss/10 border border-loss/20 rounded-md px-3 py-2 mb-4">
-                {deleteError}
-              </p>
+              <Alert className="mb-4">{deleteError}</Alert>
             )}
 
             <div className="flex justify-end gap-3">
-              <button
+              <Button
                 onClick={() => setPendingDelete(null)}
                 disabled={deleting}
-                className="text-sm text-parchment-dim hover:text-parchment px-4 py-2 rounded-md border border-brass/20 transition-colors disabled:opacity-50"
+                variant="secondary"
+                className="px-4 py-2"
               >
                 Batal
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={confirmDelete}
                 disabled={deleting}
-                className="text-sm text-parchment bg-loss hover:bg-loss-dim px-4 py-2 rounded-md font-medium transition-colors disabled:opacity-60"
+                variant="danger"
+                className="px-4 py-2"
               >
                 {deleting ? 'Menghapus...' : 'Hapus'}
-              </button>
+              </Button>
             </div>
-          </div>
+          </Card>
         </div>,
         document.body
       )}

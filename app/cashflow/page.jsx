@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase-server'
 import { formatDateLocal } from '@/lib/date'
 import Navbar from '@/components/Navbar'
 import CashflowView from '@/components/CashflowView'
+import PageHeader from '@/components/ui/PageHeader'
 
 const MONTHS_SHOWN = 12
 
@@ -78,8 +79,7 @@ export default async function CashflowPage() {
       <Navbar active="cashflow" email={user.email} />
 
       <main className="page-enter max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
-        <h2 className="text-xl font-serif italic text-parchment mb-1">Cashflow</h2>
-        <p className="text-sm text-parchment-dim mb-6">12 bulan terakhir</p>
+        <PageHeader title="Cashflow" description="12 bulan terakhir" />
         <CashflowView rows={rows} openingBalance={openingBalance} />
       </main>
     </div>
