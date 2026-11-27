@@ -3,6 +3,8 @@ import { requireUser, validateTransaction } from '@/lib/api'
 
 // PUT /api/transactions/[id] — update transaksi
 export async function PUT(request, { params }) {
+  const { id } = await params
+
   const { supabase, user, response } = await requireUser()
   if (response) return response
 
@@ -16,7 +18,7 @@ export async function PUT(request, { params }) {
   const { data, error } = await supabase
     .from('transactions')
     .update(value)
-    .eq('id', params.id)
+    .eq('id', id)
     .eq('user_id', user.id) // pastikan hanya bisa update milik sendiri
     .select()
     .single()
@@ -30,13 +32,15 @@ export async function PUT(request, { params }) {
 
 // DELETE /api/transactions/[id] — hapus transaksi
 export async function DELETE(request, { params }) {
+  const { id } = await params
+
   const { supabase, user, response } = await requireUser()
   if (response) return response
 
   const { error } = await supabase
     .from('transactions')
     .delete()
-    .eq('id', params.id)
+    .eq('id', id)
     .eq('user_id', user.id)
 
   if (error) {

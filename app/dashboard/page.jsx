@@ -6,7 +6,7 @@ import MonthSwitcher from '@/components/MonthSwitcher'
 import Navbar from '@/components/Navbar'
 
 export default async function DashboardPage({ searchParams }) {
-  const supabase = createClient()
+  const supabase =  await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
@@ -15,7 +15,7 @@ export default async function DashboardPage({ searchParams }) {
 
   // Bulan yang ditampilkan bisa diatur lewat ?month=YYYY-MM, default bulan berjalan
   const now = new Date()
-  const monthParam = searchParams?.month // format: "2026-07"
+  const monthParam = (await searchParams)?.month // format: "2026-07"
   const [year, month] = monthParam
     ? monthParam.split('-').map(Number)
     : [now.getFullYear(), now.getMonth() + 1]

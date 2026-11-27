@@ -13,7 +13,7 @@ function signedAmount(t) {
 }
 
 export default async function CashflowPage() {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
