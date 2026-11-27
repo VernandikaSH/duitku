@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { requireUser, validateTransaction } from '@/lib/api'
+import { requireUser, validateTransaction, isValidDate, serverError } from '@/lib/api'
 
 // GET /api/transactions — ambil semua transaksi milik user yang login
 // Query params opsional: ?from=YYYY-MM-DD&to=YYYY-MM-DD&category=Makan
@@ -11,6 +11,13 @@ export async function GET(request) {
   const from = searchParams.get('from')
   const to = searchParams.get('to')
   const category = searchParams.get('category')
+
+  if ((from && !isValidDate(from)) || (to && !isValidDate(to))) {
+    return NextResponse.json({ error: 'Format tanggal harus YYYY-MM-DD' }, { status: 400 })
+  }
+  if (category && category.length > 50) {
+    return NextResponse.json({ error: 'Kategori tidak valid' }, { status: 400 })
+  }
 
   let query = supabase
     .from('transactions')
@@ -24,10 +31,7 @@ export async function GET(request) {
   if (category) query = query.eq('category', category)
 
   const { data, error } = await query
-
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
-  }
+  if (error) return serverError(error)
 
   return NextResponse.json({ data })
 }
@@ -45,13 +49,11 @@ export async function POST(request) {
 
   const { data, error } = await supabase
     .from('transactions')
-    .insert({  ...value, user_id: user.id })
+    .insert({ ...value, user_id: user.id })
     .select()
     .single()
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
-  }
+  if (error) return serverError(error)
 
   return NextResponse.json({ data }, { status: 201 })
 }
