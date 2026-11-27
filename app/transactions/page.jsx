@@ -6,7 +6,7 @@ import PageHeader from '@/components/ui/PageHeader'
 import PageContainer from '@/components/ui/PageContainer'
 
 export default async function TransactionsPage() {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {

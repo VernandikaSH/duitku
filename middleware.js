@@ -11,14 +11,16 @@ export async function middleware(request) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     {
       cookies: {
-        get(name) {
-          return request.cookies.get(name)?.value
+        getAll() {
+          return request.cookies.getAll()
         },
-        set(name, value, options) {
-          response.cookies.set({ name, value, ...options })
-        },
-        remove(name, options) {
-          response.cookies.set({ name, value: '', ...options })
+        setAll(cookiesToSet) {
+          // Tulis ke request (dibaca Server Component) dan ke response (dikirim ke browser)
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
+          response = NextResponse.next({ request })
+          cookiesToSet.forEach(({ name, value, options }) =>
+            response.cookies.set(name, value, options)
+          )
         },
       },
     }
@@ -26,15 +28,32 @@ export async function middleware(request) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  // Kalau belum login dan mencoba akses halaman selain /login & /register, redirect
-  const isAuthPage = request.nextUrl.pathname.startsWith('/login') ||
-                      request.nextUrl.pathname.startsWith('/register')
+  const { pathname } = request.nextUrl
 
+  // Redirect yang tetap membawa cookie hasil refresh token
+  const redirectTo = (path) => {
+    const redirect = NextResponse.redirect(new URL(path, request.url))
+    response.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie))
+    return redirect
+  }
+
+  // API route menangani auth sendiri lewat requireUser() → balas 401 JSON
+  if (pathname.startsWith('/api')) {
+    return response
+  }
+
+  const isAuthPage = pathname.startsWith('/login') || pathname.startsWith('/register')
   // Katalog design system boleh dibuka tanpa login (hanya berisi data dummy)
-  const isPublicPage = request.nextUrl.pathname.startsWith('/design')
+  const isPublicPage = pathname.startsWith('/design')
 
-  if (!user && !isAuthPage && !isPublicPage && request.nextUrl.pathname !== '/') {
-    return NextResponse.redirect(new URL('/login', request.url))
+  // Sudah login tapi membuka halaman login/register → arahkan ke dashboard
+  if (user && isAuthPage) {
+    return redirectTo('/dashboard')
+  }
+
+  // Belum login dan mencoba akses halaman yang diproteksi → arahkan ke login
+  if (!user && !isAuthPage && !isPublicPage && pathname !== '/') {
+    return redirectTo('/login')
   }
 
   return response
@@ -42,6 +61,6 @@ export async function middleware(request) {
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico).*)',
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }
